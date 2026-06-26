@@ -9,13 +9,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        username: { label: 'Tên đăng nhập', type: 'text' },
         password: { label: 'Mật khẩu', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+        if (!credentials?.username || !credentials?.password) return null
+        const username = (credentials.username as string).trim().toLowerCase()
+        // Support both full email and username (part before @)
+        const user = await prisma.user.findFirst({
+          where: {
+            email: username.includes('@') ? username : { startsWith: username + '@' },
+          },
         })
         if (!user) return null
         const valid = await bcrypt.compare(credentials.password as string, user.password)

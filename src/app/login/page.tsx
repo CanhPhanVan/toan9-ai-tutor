@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { Suspense } from 'react'
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
@@ -10,7 +10,7 @@ function LoginForm() {
   const params = useSearchParams()
   const callbackUrl = params.get('callbackUrl') ?? '/'
 
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,10 +19,10 @@ function LoginForm() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const res = await signIn('credentials', { email, password, redirect: false })
+    const res = await signIn('credentials', { username, password, redirect: false })
     setLoading(false)
     if (res?.error) {
-      setError('Email hoặc mật khẩu không đúng')
+      setError('Ten dang nhap hoac mat khau khong dung')
     } else {
       router.push(callbackUrl)
       router.refresh()
@@ -33,15 +33,16 @@ function LoginForm() {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Tên đăng nhập</label>
           <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
+            type="text"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
             required
-            placeholder="email@example.com"
+            placeholder="vd: nguyenvana (phần trước @)"
             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
           />
+          <p className="text-xs text-gray-400 mt-1">Nhập phần trước @ của email, hoặc email đầy đủ</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Mật khẩu</label>
@@ -106,3 +107,4 @@ export default function LoginPage() {
     </div>
   )
 }
+
