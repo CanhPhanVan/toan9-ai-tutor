@@ -32,8 +32,8 @@ export default async function AdminHistoryPage({
   ])
 
   const totalCount = submissions.length
-  const selfSolvedCount = submissions.filter(s => s.aiHelpCount === 0).length
-  const aiAssistedCount = submissions.filter(s => s.aiHelpCount > 0).length
+  const selfSolvedCount = submissions.filter((s: { aiHelpCount: number }) => s.aiHelpCount === 0).length
+  const aiAssistedCount = submissions.filter((s: { aiHelpCount: number }) => s.aiHelpCount > 0).length
   const selfPercent = totalCount > 0 ? Math.round((selfSolvedCount / totalCount) * 100) : 0
 
   return (
