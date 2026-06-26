@@ -1,0 +1,117 @@
+https://chatgpt.com/c/6a3bd889-fa30-83ec-bab2-d30e4fee1230
+
+
+tích hợp thêm chatbot hỏi đáp/gợi ý giải nhanh. Nhưng nên thiết kế chatbot theo kiểu “gia sư hỗ trợ từng bước”, không nên để nó trả lời đáp án ngay từ đầu. Nếu không, học sinh sẽ chỉ copy đáp án, app mất giá trị học tập.
+
+1. Vai trò của chatbot trong app
+
+Chatbot nên nằm bên cạnh màn hình làm bài:
+
+--------------------------------------------------
+| Đề bài + khu vực làm bài        | Chatbot gợi ý |
+|                                |               |
+| Học sinh nhập lời giải          | Bạn cần gợi ý |
+|                                | bước nào?     |
+--------------------------------------------------
+
+Chatbot có nhiệm vụ:
+
+1. Giải thích đề bài
+2. Gợi ý bước tiếp theo
+3. Nhắc lại công thức cần dùng
+4. Kiểm tra nhanh một bước học sinh đang làm
+5. Chỉ ra lỗi sai
+6. Đưa lời giải từng phần nếu học sinh bí
+7. Không đưa đáp án cuối quá sớm
+2. Luồng sử dụng chatbot
+
+Ví dụ học sinh đang giải bài:
+
+Giải phương trình: x² - 5x + 6 = 0
+
+Học sinh hỏi chatbot:
+
+Em không biết bắt đầu từ đâu?
+
+Chatbot nên trả lời:
+
+Bài này là phương trình bậc hai dạng ax² + bx + c = 0.
+
+Em hãy xác định trước:
+a = ?
+b = ?
+c = ?
+
+Sau đó mình có thể dùng công thức Δ = b² - 4ac.
+
+Nếu học sinh hỏi tiếp:
+
+a = 1, b = -5, c = 6 đúng không?
+
+Chatbot trả lời:
+
+Đúng rồi.
+
+Bước tiếp theo em hãy tính:
+Δ = (-5)² - 4 × 1 × 6
+
+Em thử tính kết quả Δ là bao nhiêu?
+
+Như vậy chatbot đang dẫn học sinh tự làm, không đưa ngay đáp án.
+
+3. Các chế độ chatbot nên có
+
+Nên cho chatbot 3 chế độ để phù hợp từng nhu cầu.
+
+Chế độ 1: Gợi ý nhẹ
+
+Dành cho học sinh còn muốn tự làm.
+
+Ví dụ:
+"Em hãy thử đưa bài toán về dạng ax² + bx + c = 0 trước."
+Chế độ 2: Hướng dẫn từng bước
+
+Dành cho học sinh bị bí.
+
+Bước 1: Xác định a, b, c
+Bước 2: Tính Δ
+Bước 3: Áp dụng công thức nghiệm
+Bước 4: Kết luận
+Chế độ 3: Giải thích lỗi sai
+
+Dành cho lúc học sinh làm sai.
+
+Bạn sai ở bước tính Δ.
+Cụ thể, (-5)² = 25, không phải -25.
+Lỗi này thường xảy ra khi quên rằng bình phương số âm sẽ ra số dương.
+4. Nút gợi ý nhanh nên có trên giao diện
+
+Thay vì bắt học sinh gõ nhiều, có thể tạo các nút nhanh:
+
+[ Em không hiểu đề ]
+[ Gợi ý bước đầu ]
+[ Công thức cần dùng ]
+[ Kiểm tra bước này ]
+[ Vì sao em sai? ]
+[ Cho em lời giải chi tiết ]
+
+Cách này rất phù hợp cho học sinh lớp 9 vì giao diện dễ dùng.
+
+5. Thiết kế chatbot thông minh hơn
+
+Chatbot không nên hoạt động độc lập. Nó cần biết:
+
+- Học sinh đang làm bài nào
+- Chủ đề bài toán là gì
+- Mức độ bài tập
+- Lời giải mẫu
+- Bước hiện tại của học sinh
+- Lịch sử học sinh đã hỏi gì
+- Học sinh thường sai dạng nào
+
+Ví dụ nếu học sinh hay sai dấu, chatbot có thể nhắc:
+
+Ở các bài trước, em thường nhầm dấu khi thay b vào công thức nghiệm.
+Bài này em chú ý: b = -5 nên -b = 5.
+
+Đây là phần giúp app khác biệt so với chatbot bình thường.

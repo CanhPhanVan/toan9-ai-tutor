@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  password    String
+  role        String       @default("student")  // "student" | "parent"
+  createdAt   DateTime     @default(now())
+  submissions Submission[]
+  examAttempts ExamAttempt[]
+}
+
+model DbExercise {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  topicId     String
+  topicName   String
+  difficulty  String   @default("medium")
+  method      String?
+  solution    String?
+  hints       String   @default("[]")
+  status      String   @default("published")   // "published" | "draft" | "review"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Exam {
+  id        String        @id @default(cuid())
+  title     String
+  type      String        // 'hk1' | 'hk2' | 'tuyen-sinh'
+  content   String        // JSON: ExamContent
+  duration  Int           @default(90)
+  status    String        @default("published")
+  createdAt DateTime      @default(now())
+  attempts  ExamAttempt[]
+}
+
+model ExamAttempt {
+  id          String   @id @default(cuid())
+  examId      String
+  userId      String?
+  userName    String?
+  answers     String   // JSON: { "1a": "lời giải hs", "1b": "..." }
+  score       Float?
+  feedback    String?  // JSON: per-part grading detail
+  submittedAt DateTime @default(now())
+  exam        Exam     @relation(fields: [examId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Submission {
+  id            String   @id @default(cuid())
+  userId        String?
+  userName      String?
+  exerciseId    String
+  exerciseTitle String?
+  topicId       String?
+  topicName     String?
+  studentAnswer String
+  isCorrect     Boolean?
+  score         Float?
+  feedback      String?
+  aiHelpCount   Int      @default(0)
+  submittedAt   DateTime @default(now())
+  user          User?    @relation(fields: [userId], references: [id])
+}
