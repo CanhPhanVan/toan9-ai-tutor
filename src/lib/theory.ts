@@ -31,14 +31,14 @@ export const THEORY: TopicTheory[] = [
       'Căn bậc ba $\\sqrt[3]{a}$ xác định với mọi số thực $a$.',
     ],
     formulas: [
-      { name: 'Định nghĩa căn bậc hai', formula: 'sqrt(a) = x >= 0 khi x^2 = a (a >= 0)', note: 'a phải không âm' },
-      { name: 'Hằng đẳng thức căn', formula: 'sqrt(a^2) = |a|', note: 'Kết quả luôn không âm' },
-      { name: 'Tích dưới dấu căn', formula: 'sqrt(a*b) = sqrt(a)*sqrt(b)', note: 'a, b >= 0' },
-      { name: 'Thương dưới dấu căn', formula: 'sqrt(a/b) = sqrt(a)/sqrt(b)', note: 'a >= 0, b > 0' },
-      { name: 'Đưa thừa số ra ngoài', formula: 'sqrt(a^2 * b) = a*sqrt(b)', note: 'a >= 0, b >= 0' },
-      { name: 'Trục căn thức đơn giản', formula: 'a/sqrt(b) = a*sqrt(b)/b', note: 'b > 0' },
-      { name: 'Trục căn thức liên hợp', formula: 'a/(sqrt(b)+sqrt(c)) = a*(sqrt(b)-sqrt(c))/(b-c)', note: 'b ≠ c' },
-      { name: 'Căn bậc ba', formula: 'cbrt(a) = x khi x^3 = a', note: 'Xác định với mọi a thực' },
+      { name: 'Định nghĩa căn bậc hai', formula: '$\\sqrt{a} = x \\geq 0$ khi $x^2 = a\\ (a \\geq 0)$', note: 'a phải không âm' },
+      { name: 'Hằng đẳng thức căn', formula: '$\\sqrt{a^2} = |a|$', note: 'Kết quả luôn không âm' },
+      { name: 'Tích dưới dấu căn', formula: '$\\sqrt{a \\cdot b} = \\sqrt{a} \\cdot \\sqrt{b}$', note: 'a, b ≥ 0' },
+      { name: 'Thương dưới dấu căn', formula: '$\\sqrt{\\dfrac{a}{b}} = \\dfrac{\\sqrt{a}}{\\sqrt{b}}$', note: 'a ≥ 0, b > 0' },
+      { name: 'Đưa thừa số ra ngoài', formula: '$\\sqrt{a^2 \\cdot b} = a\\sqrt{b}$', note: 'a ≥ 0, b ≥ 0' },
+      { name: 'Trục căn thức đơn giản', formula: '$\\dfrac{a}{\\sqrt{b}} = \\dfrac{a\\sqrt{b}}{b}$', note: 'b > 0' },
+      { name: 'Trục căn thức liên hợp', formula: '$\\dfrac{a}{\\sqrt{b}+\\sqrt{c}} = \\dfrac{a(\\sqrt{b}-\\sqrt{c})}{b-c}$', note: 'b ≠ c' },
+      { name: 'Căn bậc ba', formula: '$\\sqrt[3]{a} = x$ khi $x^3 = a$', note: 'Xác định với mọi a thực' },
     ],
     examples: [
       {
@@ -94,13 +94,13 @@ export const THEORY: TopicTheory[] = [
       'Điều kiện xác định của phân thức là mẫu thức khác 0.',
     ],
     formulas: [
-      { name: '$(a+b)^2$', formula: '(a+b)^2 = a^2 + 2ab + b^2', note: 'HĐT bình phương tổng' },
-      { name: '$(a-b)^2$', formula: '(a-b)^2 = a^2 - 2ab + b^2', note: 'HĐT bình phương hiệu' },
-      { name: '$(a+b)(a-b)$', formula: '(a+b)(a-b) = a^2 - b^2', note: 'HĐT hiệu hai bình phương' },
-      { name: '$(a+b)^3$', formula: '(a+b)^3 = a^3 + 3a^2b + 3ab^2 + b^3', note: 'HĐT lập phương tổng' },
-      { name: '$(a-b)^3$', formula: '(a-b)^3 = a^3 - 3a^2b + 3ab^2 - b^3', note: 'HĐT lập phương hiệu' },
-      { name: '$a^3+b^3$', formula: 'a^3+b^3 = (a+b)(a^2-ab+b^2)', note: 'Tổng hai lập phương' },
-      { name: '$a^3-b^3$', formula: 'a^3-b^3 = (a-b)(a^2+ab+b^2)', note: 'Hiệu hai lập phương' },
+      { name: '$(a+b)^2$', formula: '$(a+b)^2 = a^2 + 2ab + b^2$', note: 'HĐT bình phương tổng' },
+      { name: '$(a-b)^2$', formula: '$(a-b)^2 = a^2 - 2ab + b^2$', note: 'HĐT bình phương hiệu' },
+      { name: '$(a+b)(a-b)$', formula: '$(a+b)(a-b) = a^2 - b^2$', note: 'HĐT hiệu hai bình phương' },
+      { name: '$(a+b)^3$', formula: '$(a+b)^3 = a^3 + 3a^2b + 3ab^2 + b^3$', note: 'HĐT lập phương tổng' },
+      { name: '$(a-b)^3$', formula: '$(a-b)^3 = a^3 - 3a^2b + 3ab^2 - b^3$', note: 'HĐT lập phương hiệu' },
+      { name: '$a^3+b^3$', formula: '$a^3+b^3 = (a+b)(a^2-ab+b^2)$', note: 'Tổng hai lập phương' },
+      { name: '$a^3-b^3$', formula: '$a^3-b^3 = (a-b)(a^2+ab+b^2)$', note: 'Hiệu hai lập phương' },
     ],
     examples: [
       {
@@ -155,10 +155,10 @@ export const THEORY: TopicTheory[] = [
       'Hệ phương trình có thể vô nghiệm, nghiệm duy nhất, hoặc vô số nghiệm.',
     ],
     formulas: [
-      { name: 'PT bậc nhất', formula: 'ax + b = 0 => x = -b/a (a ≠ 0)', note: 'Nghiệm duy nhất' },
-      { name: 'Phương pháp thế', formula: 'Từ PT1 biểu diễn y theo x, thế vào PT2', note: 'Hệ 2 ẩn' },
+      { name: 'PT bậc nhất', formula: '$ax + b = 0 \\Rightarrow x = -\\dfrac{b}{a}\\ (a \\neq 0)$', note: 'Nghiệm duy nhất' },
+      { name: 'Phương pháp thế', formula: 'Từ PT(1) biểu diễn $y$ theo $x$, thế vào PT(2)', note: 'Hệ 2 ẩn' },
       { name: 'Phương pháp cộng', formula: 'Nhân hệ số rồi cộng/trừ 2 PT để khử 1 ẩn', note: 'Hệ 2 ẩn' },
-      { name: 'PT tích', formula: 'A*B = 0 <=> A=0 hoặc B=0', note: 'Phân tích nhân tử trước' },
+      { name: 'PT tích', formula: '$A \\cdot B = 0 \\Leftrightarrow A=0$ hoặc $B=0$', note: 'Phân tích nhân tử trước' },
     ],
     examples: [
       {
@@ -213,11 +213,11 @@ export const THEORY: TopicTheory[] = [
       'Parabol có $a > 0$ quay lên trên, $a < 0$ quay xuống dưới.',
     ],
     formulas: [
-      { name: 'Hàm bậc nhất', formula: 'y = ax + b (a ≠ 0)', note: 'Đường thẳng, a là hệ số góc' },
-      { name: 'Đỉnh parabol', formula: 'x_0 = -b/(2a), y_0 = -(b^2-4ac)/(4a)', note: 'Đỉnh I(x0; y0)' },
-      { name: 'Trục đối xứng', formula: 'x = -b/(2a)', note: 'Parabol đối xứng qua trục này' },
-      { name: 'Giao với trục Ox', formula: 'Giải ax^2+bx+c=0', note: 'Delta>=0 mới có giao' },
-      { name: 'Giao với trục Oy', formula: 'x=0 => y=c', note: 'Điểm (0; c)' },
+      { name: 'Hàm bậc nhất', formula: '$y = ax + b\\ (a \\neq 0)$', note: 'Đường thẳng, a là hệ số góc' },
+      { name: 'Đỉnh parabol', formula: '$x_0 = -\\dfrac{b}{2a},\\quad y_0 = -\\dfrac{b^2-4ac}{4a}$', note: 'Đỉnh I(x₀; y₀)' },
+      { name: 'Trục đối xứng', formula: '$x = -\\dfrac{b}{2a}$', note: 'Parabol đối xứng qua trục này' },
+      { name: 'Giao với trục Ox', formula: 'Giải $ax^2+bx+c=0$', note: 'Δ ≥ 0 mới có giao' },
+      { name: 'Giao với trục Oy', formula: '$x=0 \\Rightarrow y=c$', note: 'Điểm (0; c)' },
     ],
     examples: [
       {
@@ -274,11 +274,11 @@ export const THEORY: TopicTheory[] = [
       'Dùng hệ thức Viète lập phương trình khi biết tổng và tích các nghiệm.',
     ],
     formulas: [
-      { name: 'Công thức nghiệm', formula: 'x = (-b ± sqrt(Delta)) / (2a)', note: 'Delta = b^2 - 4ac' },
-      { name: 'Công thức nghiệm thu gọn', formula: "x = (-b' ± sqrt(Delta')) / a", note: "b=2b', Delta'=b'^2-ac" },
-      { name: 'Viète 1', formula: 'x1 + x2 = -b/a', note: 'Tổng hai nghiệm' },
-      { name: 'Viète 2', formula: 'x1 * x2 = c/a', note: 'Tích hai nghiệm' },
-      { name: 'Lập PT từ nghiệm', formula: 'x^2 - Sx + P = 0 (S=x1+x2, P=x1*x2)', note: 'Dạng chính tắc' },
+      { name: 'Công thức nghiệm', formula: '$x = \\dfrac{-b \\pm \\sqrt{\\Delta}}{2a}$', note: 'Δ = b² - 4ac' },
+      { name: 'Công thức nghiệm thu gọn', formula: "$x = \\dfrac{-b' \\pm \\sqrt{\\Delta'}}{a}$", note: "b = 2b', Δ' = b'²- ac" },
+      { name: 'Viète 1', formula: '$x_1 + x_2 = -\\dfrac{b}{a}$', note: 'Tổng hai nghiệm' },
+      { name: 'Viète 2', formula: '$x_1 \\cdot x_2 = \\dfrac{c}{a}$', note: 'Tích hai nghiệm' },
+      { name: 'Lập PT từ nghiệm', formula: '$x^2 - Sx + P = 0$', note: 'S = x₁+x₂, P = x₁·x₂' },
     ],
     examples: [
       {
@@ -333,11 +333,11 @@ export const THEORY: TopicTheory[] = [
       'Định lý Pythagoras: $BC^2 = AB^2 + AC^2$ trong tam giác vuông tại $A$.',
     ],
     formulas: [
-      { name: 'Định lý Thales', formula: 'AD/DB = AE/EC khi DE // BC', note: 'D thuộc AB, E thuộc AC' },
-      { name: 'Đồng dạng AA', formula: 'Hai tam giác có hai góc bằng nhau', note: 'Tỉ số k = cạnh tương ứng' },
-      { name: 'Diện tích tam giác', formula: 'S = (1/2)*a*h', note: 'a là cạnh đáy, h là chiều cao' },
-      { name: 'Pythagoras', formula: 'c^2 = a^2 + b^2', note: 'Tam giác vuông, c là cạnh huyền' },
-      { name: 'Đường trung bình', formula: 'MN // BC, MN = BC/2', note: 'M,N là trung điểm AB, AC' },
+      { name: 'Định lý Thales', formula: '$\\dfrac{AD}{DB} = \\dfrac{AE}{EC}$ khi $DE \\parallel BC$', note: 'D thuộc AB, E thuộc AC' },
+      { name: 'Đồng dạng AA', formula: 'Hai tam giác có hai góc bằng nhau → đồng dạng', note: 'Tỉ số k = cạnh tương ứng' },
+      { name: 'Diện tích tam giác', formula: '$S = \\dfrac{1}{2} \\cdot a \\cdot h$', note: 'a là cạnh đáy, h là chiều cao' },
+      { name: 'Pythagoras', formula: '$c^2 = a^2 + b^2$', note: 'Tam giác vuông, c là cạnh huyền' },
+      { name: 'Đường trung bình', formula: '$MN \\parallel BC,\\quad MN = \\dfrac{BC}{2}$', note: 'M, N là trung điểm AB, AC' },
     ],
     examples: [
       {
@@ -389,12 +389,12 @@ export const THEORY: TopicTheory[] = [
       'Hai tiếp tuyến từ ngoài bằng nhau và tâm nằm trên đường phân giác góc giữa chúng.',
     ],
     formulas: [
-      { name: 'Tiếp tuyến và bán kính', formula: 'OA ⊥ MA (MA là tiếp tuyến tại A)', note: 'Tạo tam giác vuông' },
-      { name: 'Độ dài tiếp tuyến', formula: 'MA^2 = MO^2 - R^2', note: 'M ngoài đường tròn' },
-      { name: 'Góc nội tiếp', formula: 'Góc nội tiếp = (1/2) * cung bị chắn', note: 'Cung tính bằng độ' },
-      { name: 'Góc tâm', formula: 'Góc tâm = cung bị chắn', note: 'Bằng số đo cung' },
-      { name: 'Tứ giác nội tiếp', formula: 'Goc_A + Goc_C = 180°', note: 'Hai góc đối bù nhau' },
-      { name: 'Dây và khoảng cách', formula: 'OH^2 + AH^2 = R^2 (H trung điểm dây AB)', note: 'OH ⊥ AB' },
+      { name: 'Tiếp tuyến và bán kính', formula: '$OA \\perp MA$ (MA là tiếp tuyến tại A)', note: 'Tạo tam giác vuông' },
+      { name: 'Độ dài tiếp tuyến', formula: '$MA^2 = MO^2 - R^2$', note: 'M ngoài đường tròn' },
+      { name: 'Góc nội tiếp', formula: 'Góc nội tiếp $= \\dfrac{1}{2}$ cung bị chắn', note: 'Cung tính bằng độ' },
+      { name: 'Góc tâm', formula: 'Góc tâm $=$ số đo cung bị chắn', note: 'Bằng số đo cung' },
+      { name: 'Tứ giác nội tiếp', formula: '$\\angle A + \\angle C = 180°$', note: 'Hai góc đối bù nhau' },
+      { name: 'Dây và khoảng cách', formula: '$OH^2 + AH^2 = R^2$', note: 'H là trung điểm dây AB, OH ⊥ AB' },
     ],
     examples: [
       {
@@ -447,13 +447,13 @@ export const THEORY: TopicTheory[] = [
       'Ứng dụng: tính chiều cao, khoảng cách trong thực tế.',
     ],
     formulas: [
-      { name: 'AH^2', formula: 'AH^2 = BH * HC', note: 'AH là đường cao từ góc vuông' },
-      { name: 'AB^2', formula: 'AB^2 = BH * BC', note: 'Hình chiếu của AB lên BC' },
-      { name: 'AC^2', formula: 'AC^2 = HC * BC', note: 'Hình chiếu của AC lên BC' },
-      { name: 'sin alpha', formula: 'sin(alpha) = canh_doi / canh_huyen', note: 'Trong tam giác vuông' },
-      { name: 'cos alpha', formula: 'cos(alpha) = canh_ke / canh_huyen', note: 'Trong tam giác vuông' },
-      { name: 'tan alpha', formula: 'tan(alpha) = canh_doi / canh_ke', note: 'Trong tam giác vuông' },
-      { name: 'Hệ thức cơ bản', formula: 'sin^2(a) + cos^2(a) = 1', note: 'Với mọi góc a' },
+      { name: '$AH^2$', formula: '$AH^2 = BH \\cdot HC$', note: 'AH là đường cao từ góc vuông' },
+      { name: '$AB^2$', formula: '$AB^2 = BH \\cdot BC$', note: 'Hình chiếu của AB lên BC' },
+      { name: '$AC^2$', formula: '$AC^2 = HC \\cdot BC$', note: 'Hình chiếu của AC lên BC' },
+      { name: '$\\sin\\alpha$', formula: '$\\sin\\alpha = \\dfrac{\\text{cạnh đối}}{\\text{cạnh huyền}}$', note: 'Trong tam giác vuông' },
+      { name: '$\\cos\\alpha$', formula: '$\\cos\\alpha = \\dfrac{\\text{cạnh kề}}{\\text{cạnh huyền}}$', note: 'Trong tam giác vuông' },
+      { name: '$\\tan\\alpha$', formula: '$\\tan\\alpha = \\dfrac{\\text{cạnh đối}}{\\text{cạnh kề}}$', note: 'Trong tam giác vuông' },
+      { name: 'Hệ thức cơ bản', formula: '$\\sin^2\\alpha + \\cos^2\\alpha = 1$', note: 'Với mọi góc α' },
     ],
     examples: [
       {
@@ -506,11 +506,11 @@ export const THEORY: TopicTheory[] = [
       'Biểu đồ cột, biểu đồ tần số, bảng phân phối tần số — trình bày dữ liệu.',
     ],
     formulas: [
-      { name: 'Số trung bình', formula: 'x_bar = (x1+x2+...+xn)/n', note: 'n là số phần tử' },
-      { name: 'Số trung bình có tần số', formula: 'x_bar = sum(xi*fi) / sum(fi)', note: 'fi là tần số' },
-      { name: 'Phương sai', formula: 's^2 = (1/n)*sum((xi - x_bar)^2)', note: 'Đo độ phân tán' },
-      { name: 'Độ lệch chuẩn', formula: 's = sqrt(s^2)', note: 'Cùng đơn vị với dữ liệu' },
-      { name: 'Tần suất', formula: 'f_i(%) = (n_i/n) * 100%', note: 'ni là tần số, n là tổng' },
+      { name: 'Số trung bình', formula: '$\\bar{x} = \\dfrac{x_1+x_2+\\cdots+x_n}{n}$', note: 'n là số phần tử' },
+      { name: 'Số trung bình có tần số', formula: '$\\bar{x} = \\dfrac{\\sum x_i f_i}{\\sum f_i}$', note: 'fᵢ là tần số' },
+      { name: 'Phương sai', formula: '$s^2 = \\dfrac{1}{n}\\sum(x_i - \\bar{x})^2$', note: 'Đo độ phân tán' },
+      { name: 'Độ lệch chuẩn', formula: '$s = \\sqrt{s^2}$', note: 'Cùng đơn vị với dữ liệu' },
+      { name: 'Tần suất', formula: '$f_i(\\%) = \\dfrac{n_i}{n} \\cdot 100\\%$', note: 'nᵢ là tần số, n là tổng' },
     ],
     examples: [
       {
@@ -566,11 +566,11 @@ export const THEORY: TopicTheory[] = [
       'Biến cố độc lập: $P(A \\cap B) = P(A) \\cdot P(B)$.',
     ],
     formulas: [
-      { name: 'Xác suất cổ điển', formula: 'P(A) = m/n', note: 'm kết quả thuận lợi, n tổng' },
-      { name: 'Biến cố đối', formula: 'P(A_bar) = 1 - P(A)', note: 'A_bar là biến cố đối của A' },
-      { name: 'Cộng xác suất', formula: 'P(A+B) = P(A)+P(B)-P(A*B)', note: 'Tổng quát' },
-      { name: 'Cộng loại trừ', formula: 'P(A+B) = P(A)+P(B)', note: 'Khi A,B xung khắc' },
-      { name: 'Nhân xác suất', formula: 'P(A*B) = P(A)*P(B)', note: 'Khi A,B độc lập' },
+      { name: 'Xác suất cổ điển', formula: '$P(A) = \\dfrac{m}{n}$', note: 'm kết quả thuận lợi, n tổng' },
+      { name: 'Biến cố đối', formula: '$P(\\bar{A}) = 1 - P(A)$', note: 'Ā là biến cố đối của A' },
+      { name: 'Cộng xác suất', formula: '$P(A \\cup B) = P(A)+P(B)-P(A \\cap B)$', note: 'Tổng quát' },
+      { name: 'Cộng loại trừ', formula: '$P(A \\cup B) = P(A)+P(B)$', note: 'Khi A, B xung khắc' },
+      { name: 'Nhân xác suất', formula: '$P(A \\cap B) = P(A) \\cdot P(B)$', note: 'Khi A, B độc lập' },
     ],
     examples: [
       {
@@ -625,10 +625,10 @@ export const THEORY: TopicTheory[] = [
       'Luôn đặt điều kiện cho ẩn và kiểm tra nghiệm với ngữ cảnh thực tế.',
     ],
     formulas: [
-      { name: 'Quãng đường', formula: 'S = v * t', note: 'v: vận tốc, t: thời gian' },
-      { name: 'Năng suất', formula: '1 giờ làm được 1/T (T: thời gian hoàn thành)', note: 'Cộng phân số năng suất' },
-      { name: 'Nồng độ', formula: 'm_ct = C% * m_dd', note: 'Chất tan = nồng độ × dung dịch' },
-      { name: 'Lãi suất', formula: 'A_n = A_0 * (1 + r)^n', note: 'Lãi kép sau n kỳ' },
+      { name: 'Quãng đường', formula: '$S = v \\cdot t$', note: 'v: vận tốc, t: thời gian' },
+      { name: 'Năng suất', formula: '1 giờ làm được $\\dfrac{1}{T}$', note: 'T: thời gian hoàn thành, cộng phân số năng suất' },
+      { name: 'Nồng độ', formula: '$m_{ct} = C\\% \\cdot m_{dd}$', note: 'Chất tan = nồng độ × dung dịch' },
+      { name: 'Lãi suất', formula: '$A_n = A_0 \\cdot (1+r)^n$', note: 'Lãi kép sau n kỳ' },
     ],
     examples: [
       {
