@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { NavAuth } from '@/components/NavAuth'
 import { auth } from '@/auth'
 import { HomeActions } from '@/components/HomeActions'
+import { AssignmentBanner } from '@/components/AssignmentBanner'
 
 export default async function HomePage() {
   const session = await auth()
@@ -22,6 +23,7 @@ export default async function HomePage() {
           <nav className="hidden md:flex items-center gap-6 text-sm text-gray-600">
             {isLoggedIn && (
               <>
+                <Link href="/bai-tap-giao" className="hover:text-amber-600 transition-colors font-medium text-amber-600">📋 Bài giao</Link>
                 <Link href="/lam-bai" className="hover:text-indigo-600 transition-colors font-medium">Làm bài</Link>
                 <Link href="/kiem-tra" className="hover:text-indigo-600 transition-colors font-medium">Kiểm tra</Link>
               </>
@@ -35,6 +37,8 @@ export default async function HomePage() {
           </div>
         </div>
       </header>
+
+      {isLoggedIn && <AssignmentBanner />}
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         {/* Hero */}

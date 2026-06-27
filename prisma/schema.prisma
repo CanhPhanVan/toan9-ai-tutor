@@ -56,6 +56,28 @@ model ExamAttempt {
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
+model Assignment {
+  id            String   @id @default(cuid())
+  exerciseId    String
+  exerciseTitle String
+  topicId       String
+  topicName     String   @default("")
+  dueDate       DateTime?
+  note          String?
+  createdAt     DateTime @default(now())
+  completions   AssignmentCompletion[]
+}
+
+model AssignmentCompletion {
+  id           String     @id @default(cuid())
+  assignmentId String
+  userId       String
+  completedAt  DateTime   @default(now())
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, userId])
+}
+
 model Submission {
   id            String   @id @default(cuid())
   userId        String?

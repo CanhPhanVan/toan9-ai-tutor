@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { TOPICS } from '@/lib/topics'
 import { EXERCISES, type Exercise } from '@/lib/exercises'
 import { renderMathContent } from '@/components/MathDisplay'
@@ -45,6 +45,8 @@ function dbToExercise(db: { id: string; title: string; content: string; topicId:
 export default function ExercisePage() {
   const params = useParams<{ topicId: string; exerciseId: string }>()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const assignmentId = searchParams.get('assignmentId')
   const topic = TOPICS.find(t => t.id === params.topicId)
 
   const [exercise, setExercise] = useState<Exercise | null>(
@@ -70,6 +72,7 @@ export default function ExercisePage() {
     ? topicExercises[currentIndex + 1] : null
   const prevExercise = currentIndex > 0 ? topicExercises[currentIndex - 1] : null
 
+  const [assignmentDone, setAssignmentDone] = useState(false)
   const [showCanvas, setShowCanvas] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [canvasImages, setCanvasImages] = useState<string[]>([])
@@ -135,6 +138,14 @@ export default function ExercisePage() {
       const result = await response.json()
       setGradingResult(result)
       aiHelpCountRef.current = 0
+      // Auto-complete assignment if coming from assignment page
+      if (assignmentId && !assignmentDone) {
+        fetch('/api/assignments/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assignmentId }),
+        }).then(() => setAssignmentDone(true)).catch(() => {})
+      }
     } catch (error) {
       console.error('Grading error:', error)
     } finally {
@@ -251,12 +262,27 @@ export default function ExercisePage() {
 
           {/* Cột giữa: Ô bài làm */}
           <div className="md:col-span-6 flex flex-col gap-4">
+            {/* Assignment badge */}
+            {assignmentId && (
+              <div className={`rounded-xl px-4 py-2.5 border text-sm flex items-center gap-2 ${assignmentDone ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
+                {assignmentDone ? '✅ Đã hoàn thành bài giao — tốt lắm!' : '📋 Đây là bài tập bắt buộc — hãy làm và nộp bài.'}
+                {assignmentDone && (
+                  <Link href="/bai-tap-giao" className="ml-auto text-xs text-green-600 hover:underline">← Về danh sách</Link>
+                )}
+              </div>
+            )}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex-1">
-              <h3 className="font-bold text-gray-900 mb-4">✏️ Bài làm</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-gray-900">✏️ Bài làm</h3>
+                <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-2 py-1 rounded-lg">🚫 Không cho phép dán (paste)</span>
+              </div>
               <textarea
                 ref={textareaRef}
                 value={answer}
                 onChange={e => setAnswer(e.target.value)}
+                onPaste={e => { e.preventDefault(); alert('Không được phép dán văn bản vào ô bài làm. Hãy tự gõ lời giải của em!') }}
+                onDrop={e => { e.preventDefault() }}
+                onContextMenu={e => e.preventDefault()}
                 placeholder={`Trình bày lời giải tại đây...\n\nVí dụ:\nBước 1: ...\nBước 2: ...\nKết luận: ...`}
                 rows={16}
                 className={`w-full rounded-xl border px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors resize-y ${
