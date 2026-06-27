@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState, useEffect } from 'react'
 import { TOPICS } from '@/lib/topics'
 import { EXERCISES } from '@/lib/exercises'
@@ -27,7 +27,6 @@ export default function AdminAssignmentsPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Form
   const [assignmentTitle, setAssignmentTitle] = useState('Bai tap bat buoc Toan 9')
   const [selectedTopicId, setSelectedTopicId] = useState('')
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
@@ -61,15 +60,15 @@ export default function AdminAssignmentsPage() {
     ...EXERCISES.map(e => ({
       id: e.id,
       title: e.title,
-      content: (e as { content?: string }).content ?? '',
+      content: e.content ?? '',
       topicId: e.topicId,
       topicName: TOPICS.find(t => t.id === e.topicId)?.name ?? '',
-      difficulty: 'De',
+      difficulty: e.difficulty,
     })),
     ...dbExercises.map(e => ({
       id: e.id, title: e.title, content: e.content ?? '',
       topicId: e.topicId, topicName: e.topicName,
-      difficulty: e.difficulty ?? 'Trung binh', isDb: true,
+      difficulty: e.difficulty ?? 'medium', isDb: true,
     })),
   ]
 
@@ -177,22 +176,27 @@ export default function AdminAssignmentsPage() {
 
       {/* 2-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left: Form */}
+
+        {/* LEFT: Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5 self-start">
           <h2 className="text-lg font-bold text-gray-800">Tao bai giao moi</h2>
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Tieu de bai giao</label>
-            <input type="text" value={assignmentTitle} onChange={e => setAssignmentTitle(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+            <input
+              type="text"
+              value={assignmentTitle}
+              onChange={e => setAssignmentTitle(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Giao cho lop</label>
               <select
-                value={assignMode === 'all' ? 'all' : ''}
-                onChange={e => { setAssignMode(e.target.value === 'all' ? 'all' : 'specific'); setSelectedStudentId('') }}
+                value={assignMode}
+                onChange={e => { setAssignMode(e.target.value as 'all' | 'specific'); setSelectedStudentId('') }}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
               >
                 <option value="all">Tat ca hoc sinh</option>
@@ -201,16 +205,23 @@ export default function AdminAssignmentsPage() {
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Han hoan thanh</label>
-              <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+              <input
+                type="date"
+                value={dueDate}
+                onChange={e => setDueDate(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
             </div>
           </div>
 
           {assignMode === 'specific' && (
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Hoac giao rieng hoc sinh</label>
-              <select value={selectedStudentId} onChange={e => setSelectedStudentId(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+              <select
+                value={selectedStudentId}
+                onChange={e => setSelectedStudentId(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
                 <option value="">-- Chon hoc sinh --</option>
                 {students.map(s => (
                   <option key={s.id} value={s.id}>{s.name} - {s.email}</option>
@@ -221,14 +232,22 @@ export default function AdminAssignmentsPage() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Ghi chu</label>
-            <textarea value={note} onChange={e => setNote(e.target.value)}
-              rows={3} placeholder="VD: Hoan thanh truoc tiet hoc ngay mai."
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none" />
+            <textarea
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              rows={3}
+              placeholder="VD: Hoan thanh truoc tiet hoc ngay mai."
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
+            />
           </div>
 
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={mandatory} onChange={e => setMandatory(e.target.checked)}
-              className="w-4 h-4 rounded accent-blue-600" />
+            <input
+              type="checkbox"
+              checked={mandatory}
+              onChange={e => setMandatory(e.target.checked)}
+              className="w-4 h-4 rounded accent-blue-600"
+            />
             <span className="text-sm font-medium text-gray-700">Bai bat buoc phai hoan thanh</span>
           </label>
 
@@ -238,13 +257,16 @@ export default function AdminAssignmentsPage() {
             </div>
           )}
 
-          <button type="submit" disabled={saving || selectedExerciseIds.length === 0}
-            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 transition-colors disabled:opacity-50">
-            {saving ? 'Dang giao...' : `Giao bai tap${selectedExerciseIds.length > 0 ? ` (${selectedExerciseIds.length})` : ''}`}
+          <button
+            type="submit"
+            disabled={saving || selectedExerciseIds.length === 0}
+            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {saving ? 'Dang giao...' : selectedExerciseIds.length > 0 ? `Giao bai tap (${selectedExerciseIds.length})` : 'Giao bai tap'}
           </button>
         </form>
 
-        {/* Right: Exercise list */}
+        {/* RIGHT: Exercise list */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
           {/* Header */}
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -256,15 +278,20 @@ export default function AdminAssignmentsPage() {
 
           {/* Topic filter */}
           <div className="px-4 py-3 border-b border-gray-100 flex flex-wrap gap-1.5">
-            <button type="button"
+            <button
+              type="button"
               onClick={() => setSelectedTopicId('')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${selectedTopicId === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${selectedTopicId === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            >
               Tat ca
             </button>
             {TOPICS.map(t => (
-              <button key={t.id} type="button"
+              <button
+                key={t.id}
+                type="button"
                 onClick={() => setSelectedTopicId(t.id)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${selectedTopicId === t.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${selectedTopicId === t.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
                 {t.name}
               </button>
             ))}
@@ -272,12 +299,21 @@ export default function AdminAssignmentsPage() {
 
           {/* Select all row */}
           <div className="px-5 py-2.5 border-b border-gray-100 flex items-center gap-3 bg-gray-50">
-            <input type="checkbox" checked={visibleAllSelected} onChange={toggleAllVisible}
-              className="w-4 h-4 rounded accent-blue-600 cursor-pointer" />
+            <input
+              type="checkbox"
+              checked={visibleAllSelected}
+              onChange={toggleAllVisible}
+              className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
+            />
             <span className="text-xs text-gray-500 font-medium">Chon tat ca bai hien thi</span>
             {selectedExerciseIds.length > 0 && (
-              <button type="button" onClick={() => setSelectedExerciseIds([])}
-                className="ml-auto text-xs text-red-500 hover:text-red-700">Huy chon</button>
+              <button
+                type="button"
+                onClick={() => setSelectedExerciseIds([])}
+                className="ml-auto text-xs text-red-500 hover:text-red-700"
+              >
+                Huy chon
+              </button>
             )}
           </div>
 
@@ -288,11 +324,18 @@ export default function AdminAssignmentsPage() {
             ) : (
               exercisesForTopic.map(ex => {
                 const checked = selectedExerciseIds.includes(ex.id)
+                const preview = ex.content.replace(/\$[^$]*\$/g, '...').replace(/\n/g, ' ').slice(0, 120)
                 return (
-                  <label key={ex.id}
-                    className={`flex items-start gap-3 px-5 py-4 border-b border-gray-50 cursor-pointer transition-colors ${checked ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
-                    <input type="checkbox" checked={checked} onChange={() => toggleExercise(ex.id)}
-                      className="mt-0.5 w-4 h-4 rounded accent-blue-600 flex-shrink-0" />
+                  <label
+                    key={ex.id}
+                    className={`flex items-start gap-3 px-5 py-4 border-b border-gray-50 cursor-pointer transition-colors ${checked ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleExercise(ex.id)}
+                      className="mt-0.5 w-4 h-4 rounded accent-blue-600 flex-shrink-0"
+                    />
                     <div className="min-w-0">
                       <p className={`text-sm font-semibold leading-snug ${checked ? 'text-blue-800' : 'text-gray-800'}`}>
                         {ex.title}
@@ -300,9 +343,9 @@ export default function AdminAssignmentsPage() {
                       <p className="text-xs text-gray-400 mt-0.5">
                         {ex.topicName}{ex.difficulty ? ` · ${ex.difficulty}` : ''}{ex.isDb ? ' · DB' : ''}
                       </p>
-                      {ex.content && (
+                      {preview && (
                         <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
-                          {ex.content.replace(/\$[^$]*\$/g, '...').slice(0, 120)}
+                          {preview}
                         </p>
                       )}
                     </div>
@@ -314,17 +357,18 @@ export default function AdminAssignmentsPage() {
         </div>
       </div>
 
-      {/* Assigned list table */}
+      {/* Assignment list */}
       <div className="mt-8">
         <h2 className="text-lg font-bold text-gray-800 mb-4">Danh sach bai da giao</h2>
         {loading ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center text-gray-400">Dang tai...</div>
         ) : assignments.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center text-gray-400">
-            <p className="text-3xl mb-2">📭</p><p>Chua co bai giao nao</p>
+            <p className="text-3xl mb-2">📭</p>
+            <p>Chua co bai giao nao</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
@@ -346,7 +390,7 @@ export default function AdminAssignmentsPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-600">{a.topicName}</td>
                     <td className="px-4 py-3 text-gray-600 text-xs">{assignedToLabel(a)}</td>
-                    <td className="px-4 py-3 text-gray-500">
+                    <td className="px-4 py-3 text-gray-500 text-xs">
                       {a.dueDate ? new Date(a.dueDate).toLocaleDateString('vi-VN') : '-'}
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -355,14 +399,14 @@ export default function AdminAssignmentsPage() {
                         <span className="text-gray-400">/{completionDenominator(a)}</span>
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{new Date(a.createdAt).toLocaleDateString('vi-VN')}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs">{new Date(a.createdAt).toLocaleDateString('vi-VN')}</td>
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={() => handleDelete(a.id, a.exerciseTitle)}
                         disabled={deletingId === a.id}
                         className="px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
                       >
-                        {deletingId === a.id ? '...' : '🗑️'}
+                        {deletingId === a.id ? '...' : 'Xoa'}
                       </button>
                     </td>
                   </tr>
