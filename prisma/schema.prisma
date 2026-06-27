@@ -62,6 +62,7 @@ model Assignment {
   exerciseTitle String
   topicId       String
   topicName     String   @default("")
+  assignedTo    String   @default("all")  // "all" | JSON array of userId strings
   dueDate       DateTime?
   note          String?
   createdAt     DateTime @default(now())

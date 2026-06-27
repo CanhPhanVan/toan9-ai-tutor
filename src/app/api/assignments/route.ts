@@ -6,16 +6,29 @@ export async function GET() {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ assignments: [], pending: 0 })
 
+  const userId = session.user.id
+
   const assignments = await prisma.assignment.findMany({
     orderBy: { createdAt: 'desc' },
     include: {
       completions: {
-        where: { userId: session.user.id },
+        where: { userId },
       },
     },
   })
 
-  const result = assignments.map(a => ({
+  // Filter: only assignments where assignedTo === "all" OR userId is in the list
+  const visible = assignments.filter(a => {
+    if (a.assignedTo === 'all') return true
+    try {
+      const ids: string[] = JSON.parse(a.assignedTo)
+      return ids.includes(userId)
+    } catch {
+      return false
+    }
+  })
+
+  const result = visible.map(a => ({
     id: a.id,
     exerciseId: a.exerciseId,
     exerciseTitle: a.exerciseTitle,

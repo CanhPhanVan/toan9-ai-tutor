@@ -24,9 +24,14 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   if (!await requireAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { exerciseId, exerciseTitle, topicId, topicName, dueDate, note } = await req.json()
+  const { exerciseId, exerciseTitle, topicId, topicName, dueDate, note, assignedTo } = await req.json()
   if (!exerciseId || !exerciseTitle || !topicId)
     return NextResponse.json({ error: 'Thiếu thông tin' }, { status: 400 })
+
+  // assignedTo: "all" or array of userId strings -> stored as "all" or JSON string
+  const assignedToValue = Array.isArray(assignedTo) && assignedTo.length > 0
+    ? JSON.stringify(assignedTo)
+    : 'all'
 
   const assignment = await prisma.assignment.create({
     data: {
@@ -34,6 +39,7 @@ export async function POST(req: NextRequest) {
       exerciseTitle,
       topicId,
       topicName: topicName ?? '',
+      assignedTo: assignedToValue,
       dueDate: dueDate ? new Date(dueDate) : null,
       note: note || null,
     },
