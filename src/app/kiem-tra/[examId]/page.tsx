@@ -146,9 +146,11 @@ export default function ExamPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-          <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+            <Link href="/" className="text-gray-400 hover:text-indigo-600 text-sm transition-colors" title="Trang chủ">🏠</Link>
+            <span className="text-gray-200">|</span>
             <Link href="/kiem-tra" className="text-gray-500 hover:text-gray-700 text-sm">← Chọn đề khác</Link>
-            <h1 className="font-bold text-gray-800 text-sm truncate max-w-xs">{exam.title}</h1>
+            <h1 className="font-bold text-gray-800 text-sm truncate ml-auto">{exam.title}</h1>
           </div>
         </header>
         <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
@@ -224,9 +226,13 @@ export default function ExamPage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <p className="font-bold text-gray-900 text-base">Làm đề</p>
-            <p className="text-xs text-gray-400">{exam.title} · {exam.duration} phút</p>
+          <div className="flex items-center gap-3">
+            <Link href="/" className="text-gray-400 hover:text-indigo-600 text-sm transition-colors" title="Trang chủ">🏠</Link>
+            <span className="text-gray-200">|</span>
+            <div>
+              <p className="font-bold text-gray-900 text-base">Làm đề</p>
+              <p className="text-xs text-gray-400">{exam.title} · {exam.duration} phút</p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <div className={`font-mono font-bold text-base px-4 py-1.5 rounded-xl border ${isUrgent ? 'bg-red-50 border-red-200 text-red-600 animate-pulse' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>

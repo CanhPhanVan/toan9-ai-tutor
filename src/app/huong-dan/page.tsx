@@ -96,7 +96,7 @@ export default function HuongDanPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/" className="text-gray-500 hover:text-gray-700 text-sm">← Trang chủ</Link>
+          <Link href="/" className="text-gray-400 hover:text-indigo-600 text-sm font-medium transition-colors">🏠 Trang chủ</Link>
           <span className="text-gray-300">|</span>
           <h1 className="font-bold text-gray-800">🤖 Hướng dẫn giải chi tiết</h1>
         </div>

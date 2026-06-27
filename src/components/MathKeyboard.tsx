@@ -1,18 +1,37 @@
 'use client'
+import React from 'react'
 
 interface MathKeyboardProps {
   onInsert: (value: string, cursorOffset?: number) => void
 }
 
-const KEYS: { label: string; insert: string; title: string; cursorOffset?: number }[] = [
+type KeyDef = {
+  label: string | React.ReactNode
+  insert: string
+  title: string
+  cursorOffset?: number
+}
+
+const KEYS: KeyDef[] = [
   // Hàng 1 – số mũ & căn & phân số
   { label: 'x²', insert: '²', title: 'Bình phương' },
   { label: 'x³', insert: '³', title: 'Lập phương' },
   { label: 'xⁿ', insert: '^', title: 'Số mũ n' },
   { label: '√', insert: '√', title: 'Căn bậc 2' },
   { label: '∛', insert: '∛', title: 'Căn bậc 3' },
-  { label: 'a/b', insert: '/', title: 'Gạch ngang chia' },
-  { label: '⁶⁄₃', insert: '$\\frac{}{}$', cursorOffset: 8, title: 'Phân số LaTeX: \\frac{tử}{mẫu}' },
+  { label: 'a/b', insert: '/', title: 'Dấu chia thông thường' },
+  {
+    label: (
+      <span className="flex flex-col items-center leading-none gap-px" style={{ lineHeight: 1 }}>
+        <span className="text-[10px] font-bold">a</span>
+        <span className="border-t border-current w-3.5 block" />
+        <span className="text-[10px] font-bold">b</span>
+      </span>
+    ),
+    insert: '$\\frac{}{}$',
+    cursorOffset: 7,
+    title: 'Phân số đẹp: \\frac{tử số}{mẫu số}',
+  },
   // Hàng 2 – dấu so sánh & đặc biệt
   { label: '±', insert: '±', title: 'Cộng trừ' },
   { label: '≥', insert: '≥', title: 'Lớn hơn hoặc bằng' },
@@ -59,13 +78,13 @@ export function MathKeyboard({ onInsert }: MathKeyboardProps) {
           <div key={group.label}>
             <p className="text-xs text-gray-400 mb-1.5">{group.label}</p>
             <div className="flex flex-wrap gap-1.5">
-              {group.keys.map(key => (
+              {group.keys.map((key, i) => (
                 <button
-                  key={key.insert}
+                  key={i}
                   type="button"
                   title={key.title}
                   onClick={() => onInsert(key.insert, key.cursorOffset)}
-                  className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-all select-none ${colorMap[group.color]} min-w-[2.5rem] text-center`}
+                  className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-all select-none ${colorMap[group.color]} min-w-[2.5rem] min-h-[2rem] flex items-center justify-center`}
                 >
                   {key.label}
                 </button>

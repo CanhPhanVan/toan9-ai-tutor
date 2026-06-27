@@ -27,7 +27,9 @@ export default async function TopicPage({ params }: { params: Promise<{ topicId:
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
+          <Link href="/" className="text-gray-400 hover:text-indigo-600 text-sm transition-colors" title="Trang chủ">🏠</Link>
+          <span className="text-gray-200">|</span>
           <Link href="/lam-bai" className="text-gray-500 hover:text-gray-700 text-sm">← Chủ đề</Link>
           <span className="text-gray-300">|</span>
           <h1 className="font-bold text-gray-800">{topic.name}</h1>
