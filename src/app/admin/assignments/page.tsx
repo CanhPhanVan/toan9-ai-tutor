@@ -2,6 +2,14 @@
 import { useState, useEffect } from 'react'
 import { TOPICS } from '@/lib/topics'
 import { EXERCISES } from '@/lib/exercises'
+import MathContent from '@/components/MathContent'
+
+const DIFFICULTY_LABEL: Record<string, string> = {
+  easy: 'De',
+  medium: 'Trung binh',
+  hard: 'Kho',
+  advanced: 'Nang cao',
+}
 
 type Assignment = {
   id: string
@@ -324,7 +332,6 @@ export default function AdminAssignmentsPage() {
             ) : (
               exercisesForTopic.map(ex => {
                 const checked = selectedExerciseIds.includes(ex.id)
-                const preview = ex.content.replace(/\$[^$]*\$/g, '...').replace(/\n/g, ' ').slice(0, 120)
                 return (
                   <label
                     key={ex.id}
@@ -336,17 +343,17 @@ export default function AdminAssignmentsPage() {
                       onChange={() => toggleExercise(ex.id)}
                       className="mt-0.5 w-4 h-4 rounded accent-blue-600 flex-shrink-0"
                     />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className={`text-sm font-semibold leading-snug ${checked ? 'text-blue-800' : 'text-gray-800'}`}>
                         {ex.title}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
-                        {ex.topicName}{ex.difficulty ? ` · ${ex.difficulty}` : ''}{ex.isDb ? ' · DB' : ''}
+                        {ex.topicName}{ex.difficulty ? ` · ${DIFFICULTY_LABEL[ex.difficulty] ?? ex.difficulty}` : ''}{ex.isDb ? ' · DB' : ''}
                       </p>
-                      {preview && (
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
-                          {preview}
-                        </p>
+                      {ex.content && (
+                        <div className="text-xs text-gray-600 mt-1 leading-relaxed line-clamp-3">
+                          <MathContent text={ex.content} />
+                        </div>
                       )}
                     </div>
                   </label>

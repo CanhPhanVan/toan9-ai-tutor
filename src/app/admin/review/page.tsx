@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import { renderMathContent } from '@/components/MathDisplay'
 
 export default async function AdminReviewPage() {
   const drafts = await prisma.dbExercise.findMany({
@@ -31,11 +32,11 @@ export default async function AdminReviewPage() {
                     <span className="text-xs text-gray-400">{ex.topicName}</span>
                   </div>
                   <h3 className="font-bold text-gray-800 mb-2">{ex.title}</h3>
-                  <p className="text-sm text-gray-600 bg-gray-50 rounded-xl p-3 font-mono whitespace-pre-wrap">{ex.content}</p>
+                  <div className="text-sm text-gray-600 bg-gray-50 rounded-xl p-3 leading-relaxed">{renderMathContent(ex.content)}</div>
                   {ex.solution && (
                     <div className="mt-3 bg-indigo-50 rounded-xl p-3">
                       <p className="text-xs font-semibold text-indigo-600 mb-1">Lời giải:</p>
-                      <p className="text-sm text-gray-700 font-mono whitespace-pre-wrap">{ex.solution}</p>
+                      <div className="text-sm text-gray-700 leading-relaxed">{renderMathContent(ex.solution)}</div>
                     </div>
                   )}
                 </div>
