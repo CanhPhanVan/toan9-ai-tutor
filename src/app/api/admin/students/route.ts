@@ -26,8 +26,8 @@ export async function PUT(request: NextRequest) {
     if (!id) return NextResponse.json({ error: 'Thiếu ID' }, { status: 400 })
 
     const user = await prisma.user.findUnique({ where: { id } })
-    if (!user || user.role !== 'student')
-      return NextResponse.json({ error: 'Không tìm thấy học sinh' }, { status: 404 })
+    if (!user)
+      return NextResponse.json({ error: 'Không tìm thấy người dùng' }, { status: 404 })
 
     // Kiểm tra email trùng (nếu đổi email)
     if (email && email !== user.email) {

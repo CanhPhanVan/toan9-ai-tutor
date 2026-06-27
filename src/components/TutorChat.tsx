@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { stripLatex } from '@/lib/stripLatex'
+import MathContent from './MathContent'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -145,7 +145,7 @@ export function TutorChat({ exercise, studentAnswer, onAiHelp }: TutorChatProps)
                     }`}
                   >
                     {msg.role === 'assistant' && <span className="text-indigo-400 mr-1">🧑‍🏫</span>}
-                    {msg.role === 'assistant' ? stripLatex(msg.content) : msg.content}
+                    {msg.role === 'assistant' ? <MathContent text={msg.content} /> : msg.content}
                   </div>
                 </div>
               ))

@@ -1,5 +1,5 @@
 'use client'
-import { stripLatex } from '@/lib/stripLatex'
+import MathContent from './MathContent'
 
 interface StepFeedback {
   stepNumber: number
@@ -45,7 +45,9 @@ export function GradingResult({ result }: GradingResultProps) {
             <p className={`font-bold text-lg ${result.overallCorrect ? 'text-green-700' : 'text-amber-700'}`}>
               {result.overallCorrect ? 'Xuất sắc! Bài làm đúng hoàn toàn!' : `Đúng ${correctCount}/${steps.length} bước`}
             </p>
-            <p className={`text-sm ${result.overallCorrect ? 'text-green-600' : 'text-amber-600'}`}>{stripLatex(result.encouragement)}</p>
+            <p className={`text-sm ${result.overallCorrect ? 'text-green-600' : 'text-amber-600'}`}>
+              <MathContent text={result.encouragement} />
+            </p>
           </div>
         </div>
       </div>
@@ -60,10 +62,12 @@ export function GradingResult({ result }: GradingResultProps) {
                 <span className="text-lg flex-shrink-0">{step.isCorrect ? '✅' : '❌'}</span>
                 <div className="flex-1">
                   <p className="font-medium text-sm text-gray-700 mb-1">Bước {step.stepNumber}</p>
-                  <p className={`text-sm ${step.isCorrect ? 'text-green-700' : 'text-red-700'}`}>{stripLatex(step.feedback)}</p>
+                  <p className={`text-sm ${step.isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                    <MathContent text={step.feedback} />
+                  </p>
                   {!step.isCorrect && step.wrongReason && (
                     <p className="text-xs text-red-500 mt-1.5 bg-red-100 rounded px-2 py-1">
-                      ⚠️ {stripLatex(step.wrongReason)}
+                      ⚠️ <MathContent text={step.wrongReason} />
                     </p>
                   )}
                 </div>
@@ -77,17 +81,21 @@ export function GradingResult({ result }: GradingResultProps) {
       {!result.overallCorrect && correctSolution && (
         <div className="bg-indigo-50 rounded-2xl border border-indigo-200 p-5">
           <h3 className="font-semibold text-indigo-700 mb-3">📚 Lời giải đúng:</h3>
-          <p className="text-xs font-medium text-indigo-500 mb-2">Phương pháp: {stripLatex(correctSolution.method)}</p>
+          <p className="text-xs font-medium text-indigo-500 mb-2">
+            Phương pháp: <MathContent text={correctSolution.method} />
+          </p>
           <div className="space-y-2">
             {(correctSolution.steps ?? []).map((step, i) => (
               <div key={i} className="flex gap-2 text-sm text-indigo-800">
                 <span className="flex-shrink-0 font-bold text-indigo-400">B{i + 1}.</span>
-                <span>{stripLatex(step)}</span>
+                <span><MathContent text={step} /></span>
               </div>
             ))}
           </div>
           <div className="mt-3 pt-3 border-t border-indigo-200">
-            <p className="text-sm font-semibold text-indigo-700">Đáp án: {stripLatex(correctSolution.answer)}</p>
+            <p className="text-sm font-semibold text-indigo-700">
+              Đáp án: <MathContent text={correctSolution.answer} />
+            </p>
           </div>
         </div>
       )}

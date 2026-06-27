@@ -14,6 +14,7 @@ const NAV = [
   { href: '/admin/review',    label: 'Kiểm duyệt AI',        icon: '🔍' },
   { href: '/admin/stats',     label: 'Thống kê lỗi sai',     icon: '📉' },
   { href: '/admin/history',   label: 'Lịch sử học sinh',     icon: '🗓️' },
+  { href: '/admin/users',     label: 'Quản trị viên',        icon: '👤' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -13,7 +13,7 @@ export default async function TopicPage({ params }: { params: Promise<{ topicId:
   const staticExercises = EXERCISES.filter(e => e.topicId === topicId)
 
   const dbExercises = await prisma.dbExercise.findMany({
-    where: { topicId, status: 'approved' },
+    where: { topicId, status: 'published' },
     orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
     select: { id: true, title: true, content: true, difficulty: true, topicId: true },
   })
