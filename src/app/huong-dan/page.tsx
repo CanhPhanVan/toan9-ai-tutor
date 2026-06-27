@@ -30,7 +30,7 @@ export default function HuongDanPage() {
   const [activeTab, setActiveTab] = useState<'type' | 'upload'>('type')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const handleInsert = (value: string) => {
+  const handleInsert = (value: string, cursorOffset?: number) => {
     const el = textareaRef.current
     if (!el) {
       setProblemText((prev) => prev + value)
@@ -40,9 +40,10 @@ export default function HuongDanPage() {
     const end = el.selectionEnd ?? problemText.length
     const next = problemText.slice(0, start) + value + problemText.slice(end)
     setProblemText(next)
+    const cursorPos = cursorOffset !== undefined ? start + cursorOffset : start + value.length
     setTimeout(() => {
       el.focus()
-      el.setSelectionRange(start + value.length, start + value.length)
+      el.setSelectionRange(cursorPos, cursorPos)
     }, 0)
   }
 

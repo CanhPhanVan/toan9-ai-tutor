@@ -1,17 +1,18 @@
 'use client'
 
 interface MathKeyboardProps {
-  onInsert: (value: string) => void
+  onInsert: (value: string, cursorOffset?: number) => void
 }
 
-const KEYS = [
-  // Hàng 1 – số mũ & căn
+const KEYS: { label: string; insert: string; title: string; cursorOffset?: number }[] = [
+  // Hàng 1 – số mũ & căn & phân số
   { label: 'x²', insert: '²', title: 'Bình phương' },
   { label: 'x³', insert: '³', title: 'Lập phương' },
   { label: 'xⁿ', insert: '^', title: 'Số mũ n' },
   { label: '√', insert: '√', title: 'Căn bậc 2' },
   { label: '∛', insert: '∛', title: 'Căn bậc 3' },
-  { label: 'a/b', insert: '/', title: 'Phân số' },
+  { label: 'a/b', insert: '/', title: 'Gạch ngang chia' },
+  { label: '⁶⁄₃', insert: '$\\frac{}{}$', cursorOffset: 8, title: 'Phân số LaTeX: \\frac{tử}{mẫu}' },
   // Hàng 2 – dấu so sánh & đặc biệt
   { label: '±', insert: '±', title: 'Cộng trừ' },
   { label: '≥', insert: '≥', title: 'Lớn hơn hoặc bằng' },
@@ -36,10 +37,10 @@ const KEYS = [
 ]
 
 const GROUPS = [
-  { label: 'Số mũ & Căn', keys: KEYS.slice(0, 6), color: 'indigo' },
-  { label: 'So sánh', keys: KEYS.slice(6, 12), color: 'blue' },
-  { label: 'Ký hiệu', keys: KEYS.slice(12, 18), color: 'violet' },
-  { label: 'Phương trình', keys: KEYS.slice(18, 24), color: 'purple' },
+  { label: 'Số mũ & Căn & Phân số', keys: KEYS.slice(0, 7), color: 'indigo' },
+  { label: 'So sánh', keys: KEYS.slice(7, 13), color: 'blue' },
+  { label: 'Ký hiệu', keys: KEYS.slice(13, 19), color: 'violet' },
+  { label: 'Phương trình', keys: KEYS.slice(19, 25), color: 'purple' },
 ]
 
 const colorMap: Record<string, string> = {
@@ -63,7 +64,7 @@ export function MathKeyboard({ onInsert }: MathKeyboardProps) {
                   key={key.insert}
                   type="button"
                   title={key.title}
-                  onClick={() => onInsert(key.insert)}
+                  onClick={() => onInsert(key.insert, key.cursorOffset)}
                   className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-all select-none ${colorMap[group.color]} min-w-[2.5rem] text-center`}
                 >
                   {key.label}

@@ -84,16 +84,19 @@ export default function ExercisePage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const aiHelpCountRef = useRef(0)
 
-  const handleKeyboardInsert = (text: string) => {
+  const [showPreview, setShowPreview] = useState(false)
+
+  const handleKeyboardInsert = (text: string, cursorOffset?: number) => {
     const el = textareaRef.current
     if (!el) return
     const start = el.selectionStart ?? answer.length
     const end = el.selectionEnd ?? answer.length
     const newVal = answer.slice(0, start) + text + answer.slice(end)
     setAnswer(newVal)
+    const cursorPos = cursorOffset !== undefined ? start + cursorOffset : start + text.length
     setTimeout(() => {
       el.focus()
-      el.setSelectionRange(start + text.length, start + text.length)
+      el.setSelectionRange(cursorPos, cursorPos)
     }, 0)
   }
 
@@ -243,7 +246,7 @@ export default function ExercisePage() {
                     { symbol: 'x³', input: 'x^3' },
                     { symbol: '√x', input: 'sqrt(x)' },
                     { symbol: '∛x', input: 'cbrt(x)' },
-                    { symbol: 'a/b', input: 'a/b' },
+                    { symbol: 'a/b', input: '$\\frac{a}{b}$' },
                     { symbol: '±',  input: '+/-' },
                     { symbol: '≥',  input: '>=' },
                     { symbol: '≤',  input: '<=' },
@@ -274,9 +277,27 @@ export default function ExercisePage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex-1">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-gray-900">✏️ Bài làm</h3>
-                <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-2 py-1 rounded-lg">🚫 Không cho phép dán (paste)</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowPreview(p => !p)}
+                    className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${showPreview ? 'bg-indigo-100 text-indigo-700 border-indigo-300' : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-indigo-200'}`}
+                  >
+                    {showPreview ? '📝 Gõ bài' : '🔢 Xem toán'}
+                  </button>
+                  <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-2 py-1 rounded-lg">🚫 Không paste</span>
+                </div>
               </div>
+              {showPreview ? (
+                <div className="w-full rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 min-h-[200px] text-sm leading-relaxed whitespace-pre-wrap">
+                  {answer
+                    ? <>{renderMathContent(answer)}</>
+                    : <span className="text-gray-400 italic">Bài làm sẽ hiện ở đây dưới dạng toán học...</span>
+                  }
+                </div>
+              ) : null}
               <textarea
+                style={{ display: showPreview ? 'none' : undefined }}
                 ref={textareaRef}
                 value={answer}
                 onChange={e => setAnswer(e.target.value)}
