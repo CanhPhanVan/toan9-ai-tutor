@@ -16,9 +16,9 @@ type Assignment = {
   _count: { completions: number }
 }
 
-type DbExercise = { id: string; title: string; topicId: string; topicName: string }
+type DbExercise = { id: string; title: string; content: string; topicId: string; topicName: string; difficulty?: string }
 type Student = { id: string; name: string; email: string }
-type ExerciseItem = { id: string; title: string; topicId: string; topicName: string; isDb?: boolean }
+type ExerciseItem = { id: string; title: string; content: string; topicId: string; topicName: string; difficulty: string; isDb?: boolean }
 
 export default function AdminAssignmentsPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([])
@@ -26,14 +26,16 @@ export default function AdminAssignmentsPage() {
   const [dbExercises, setDbExercises] = useState<DbExercise[]>([])
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
 
+  // Form
+  const [assignmentTitle, setAssignmentTitle] = useState('Bai tap bat buoc Toan 9')
   const [selectedTopicId, setSelectedTopicId] = useState('')
-  const [selectedExerciseId, setSelectedExerciseId] = useState('')
+  const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
   const [assignMode, setAssignMode] = useState<'all' | 'specific'>('all')
-  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([])
+  const [selectedStudentId, setSelectedStudentId] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [note, setNote] = useState('')
+  const [mandatory, setMandatory] = useState(true)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -57,11 +59,17 @@ export default function AdminAssignmentsPage() {
 
   const allExercises: ExerciseItem[] = [
     ...EXERCISES.map(e => ({
-      id: e.id, title: e.title, topicId: e.topicId,
+      id: e.id,
+      title: e.title,
+      content: (e as { content?: string }).content ?? '',
+      topicId: e.topicId,
       topicName: TOPICS.find(t => t.id === e.topicId)?.name ?? '',
+      difficulty: 'De',
     })),
     ...dbExercises.map(e => ({
-      id: e.id, title: e.title, topicId: e.topicId, topicName: e.topicName, isDb: true,
+      id: e.id, title: e.title, content: e.content ?? '',
+      topicId: e.topicId, topicName: e.topicName,
+      difficulty: e.difficulty ?? 'Trung binh', isDb: true,
     })),
   ]
 
@@ -69,50 +77,64 @@ export default function AdminAssignmentsPage() {
     ? allExercises.filter(e => e.topicId === selectedTopicId)
     : allExercises
 
-  function toggleStudent(id: string) {
-    setSelectedStudentIds(prev =>
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+  function toggleExercise(id: string) {
+    setSelectedExerciseIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     )
   }
 
-  function resetForm() {
-    setSelectedTopicId(''); setSelectedExerciseId('')
-    setAssignMode('all'); setSelectedStudentIds([])
-    setDueDate(''); setNote('')
+  function toggleAllVisible() {
+    const visibleIds = exercisesForTopic.map(e => e.id)
+    const allSelected = visibleIds.every(id => selectedExerciseIds.includes(id))
+    if (allSelected) {
+      setSelectedExerciseIds(prev => prev.filter(id => !visibleIds.includes(id)))
+    } else {
+      setSelectedExerciseIds(prev => [...new Set([...prev, ...visibleIds])])
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setMsg(null)
-    if (!selectedExerciseId) { setMsg({ type: 'error', text: 'Chua chon bai tap' }); return }
-    if (assignMode === 'specific' && selectedStudentIds.length === 0) {
-      setMsg({ type: 'error', text: 'Chua chon hoc sinh nao' }); return
+    if (selectedExerciseIds.length === 0) {
+      setMsg({ type: 'error', text: 'Chua chon bai tap nao' }); return
+    }
+    if (assignMode === 'specific' && !selectedStudentId) {
+      setMsg({ type: 'error', text: 'Chua chon hoc sinh' }); return
     }
     setSaving(true)
-    const ex = allExercises.find(e => e.id === selectedExerciseId)
-    try {
-      const res = await fetch('/api/admin/assignments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          exerciseId: selectedExerciseId,
-          exerciseTitle: ex?.title ?? '',
-          topicId: ex?.topicId ?? '',
-          topicName: ex?.topicName ?? '',
-          assignedTo: assignMode === 'all' ? 'all' : selectedStudentIds,
-          dueDate: dueDate || null,
-          note: note || null,
-        }),
-      })
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
-      const whoText = assignMode === 'all'
-        ? 'tat ca hoc sinh'
-        : `${selectedStudentIds.length} hoc sinh duoc chon`
-      setMsg({ type: 'success', text: `Da giao bai "${ex?.title}" cho ${whoText}!` })
-      resetForm(); setShowForm(false); fetchData()
-    } catch (err) {
-      setMsg({ type: 'error', text: err instanceof Error ? err.message : 'Loi' })
-    } finally { setSaving(false) }
+
+    const assignedTo = assignMode === 'all' ? 'all' : [selectedStudentId]
+    let successCount = 0
+    for (const exId of selectedExerciseIds) {
+      const ex = allExercises.find(e => e.id === exId)
+      if (!ex) continue
+      try {
+        const res = await fetch('/api/admin/assignments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            exerciseId: exId,
+            exerciseTitle: ex.title,
+            topicId: ex.topicId,
+            topicName: ex.topicName,
+            assignedTo,
+            dueDate: dueDate || null,
+            note: note || null,
+          }),
+        })
+        if (res.ok) successCount++
+      } catch { /* continue */ }
+    }
+
+    setSaving(false)
+    if (successCount > 0) {
+      setMsg({ type: 'success', text: `Da giao ${successCount} bai tap thanh cong!` })
+      setSelectedExerciseIds([])
+      fetchData()
+    } else {
+      setMsg({ type: 'error', text: 'Giao bai that bai' })
+    }
   }
 
   async function handleDelete(id: string, title: string) {
@@ -137,19 +159,14 @@ export default function AdminAssignmentsPage() {
     try { return JSON.parse(a.assignedTo).length } catch { return studentCount }
   }
 
+  const visibleAllSelected = exercisesForTopic.length > 0 &&
+    exercisesForTopic.every(e => selectedExerciseIds.includes(e.id))
+
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">📋 Giao bai tap</h1>
-          <p className="text-sm text-gray-500 mt-1">Giao bai bat buoc cho hoc sinh ({studentCount} hs)</p>
-        </div>
-        <button
-          onClick={() => { setShowForm(s => !s); setMsg(null) }}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
-        >
-          + Giao bai moi
-        </button>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Giao bai tap</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Admin/giao vien chon bai trong ngan hang va giao cho lop/hoc sinh</p>
       </div>
 
       {msg && (
@@ -158,188 +175,203 @@ export default function AdminAssignmentsPage() {
         </div>
       )}
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-indigo-100 shadow-sm p-6 mb-6 space-y-5">
-          <h2 className="font-bold text-gray-800">Tao bai giao moi</h2>
+      {/* 2-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: Form */}
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5 self-start">
+          <h2 className="text-lg font-bold text-gray-800">Tao bai giao moi</h2>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-2">① Chon chu de</label>
-            <div className="flex flex-wrap gap-2">
-              <button type="button"
-                onClick={() => { setSelectedTopicId(''); setSelectedExerciseId('') }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedTopicId === '' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 text-gray-600 hover:border-indigo-300'}`}>
-                Tat ca
-              </button>
-              {TOPICS.map(t => (
-                <button key={t.id} type="button"
-                  onClick={() => { setSelectedTopicId(t.id); setSelectedExerciseId('') }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedTopicId === t.id ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 text-gray-600 hover:border-indigo-300'}`}>
-                  {t.name}
-                </button>
-              ))}
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Tieu de bai giao</label>
+            <input type="text" value={assignmentTitle} onChange={e => setAssignmentTitle(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Giao cho lop</label>
+              <select
+                value={assignMode === 'all' ? 'all' : ''}
+                onChange={e => { setAssignMode(e.target.value === 'all' ? 'all' : 'specific'); setSelectedStudentId('') }}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <option value="all">Tat ca hoc sinh</option>
+                <option value="specific">Chon rieng</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Han hoan thanh</label>
+              <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-2">
-              ② Chon bai tap
-              <span className="font-normal text-gray-400 ml-1">({exercisesForTopic.length} bai)</span>
-            </label>
-            {exercisesForTopic.length === 0 ? (
-              <p className="text-sm text-gray-400 py-3 text-center">Khong co bai tap cho chu de nay</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
-                {exercisesForTopic.map(ex => (
-                  <button key={ex.id} type="button"
-                    onClick={() => setSelectedExerciseId(ex.id)}
-                    className={`text-left px-3 py-2.5 rounded-xl border text-sm transition-colors ${
-                      selectedExerciseId === ex.id
-                        ? 'bg-indigo-50 border-indigo-400 text-indigo-800 font-medium'
-                        : 'border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-gray-50'
-                    }`}>
-                    <span className="line-clamp-2">{ex.title}</span>
-                    {ex.isDb && <span className="text-xs text-purple-500 mt-0.5 block">Bai DB</span>}
-                    {!selectedTopicId && (
-                      <span className="text-xs text-gray-400 mt-0.5 block">{ex.topicName}</span>
-                    )}
-                  </button>
+          {assignMode === 'specific' && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Hoac giao rieng hoc sinh</label>
+              <select value={selectedStudentId} onChange={e => setSelectedStudentId(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+                <option value="">-- Chon hoc sinh --</option>
+                {students.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} - {s.email}</option>
                 ))}
-              </div>
-            )}
-            {selectedExerciseId && (
-              <p className="text-xs text-indigo-600 mt-2">
-                Da chon: {allExercises.find(e => e.id === selectedExerciseId)?.title}
-              </p>
-            )}
-          </div>
+              </select>
+            </div>
+          )}
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-2">③ Giao cho</label>
-            <div className="flex gap-3 mb-3">
-              <button type="button"
-                onClick={() => setAssignMode('all')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${assignMode === 'all' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 text-gray-600 hover:border-indigo-300'}`}>
-                Giao tat ca ({studentCount} hs)
-              </button>
-              <button type="button"
-                onClick={() => setAssignMode('specific')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${assignMode === 'specific' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 text-gray-600 hover:border-indigo-300'}`}>
-                Chon hoc sinh cu the
-              </button>
-            </div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Ghi chu</label>
+            <textarea value={note} onChange={e => setNote(e.target.value)}
+              rows={3} placeholder="VD: Hoan thanh truoc tiet hoc ngay mai."
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none" />
+          </div>
 
-            {assignMode === 'specific' && (
-              <div className="border border-gray-200 rounded-xl p-3 max-h-40 overflow-y-auto">
-                {students.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-2">Chua co hoc sinh nao</p>
-                ) : (
-                  <div className="space-y-1">
-                    <label className="flex items-center gap-2 text-xs text-gray-500 pb-1 border-b border-gray-100 cursor-pointer">
-                      <input type="checkbox"
-                        checked={selectedStudentIds.length === students.length && students.length > 0}
-                        onChange={e => setSelectedStudentIds(e.target.checked ? students.map(s => s.id) : [])}
-                        className="rounded" />
-                      Chon tat ca
-                    </label>
-                    {students.map(s => (
-                      <label key={s.id} className="flex items-center gap-2 text-sm cursor-pointer py-1">
-                        <input type="checkbox"
-                          checked={selectedStudentIds.includes(s.id)}
-                          onChange={() => toggleStudent(s.id)}
-                          className="rounded" />
-                        <span className="font-medium text-gray-700">{s.name}</span>
-                        <span className="text-xs text-gray-400">{s.email}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={mandatory} onChange={e => setMandatory(e.target.checked)}
+              className="w-4 h-4 rounded accent-blue-600" />
+            <span className="text-sm font-medium text-gray-700">Bai bat buoc phai hoan thanh</span>
+          </label>
+
+          {selectedExerciseIds.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm text-blue-700 font-medium">
+              Da chon {selectedExerciseIds.length} bai tap
+            </div>
+          )}
+
+          <button type="submit" disabled={saving || selectedExerciseIds.length === 0}
+            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 transition-colors disabled:opacity-50">
+            {saving ? 'Dang giao...' : `Giao bai tap${selectedExerciseIds.length > 0 ? ` (${selectedExerciseIds.length})` : ''}`}
+          </button>
+        </form>
+
+        {/* Right: Exercise list */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+          {/* Header */}
+          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="text-base font-bold text-gray-800">Chon bai tap</h2>
+            <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">
+              {exercisesForTopic.length} bai
+            </span>
+          </div>
+
+          {/* Topic filter */}
+          <div className="px-4 py-3 border-b border-gray-100 flex flex-wrap gap-1.5">
+            <button type="button"
+              onClick={() => setSelectedTopicId('')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${selectedTopicId === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+              Tat ca
+            </button>
+            {TOPICS.map(t => (
+              <button key={t.id} type="button"
+                onClick={() => setSelectedTopicId(t.id)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${selectedTopicId === t.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                {t.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Select all row */}
+          <div className="px-5 py-2.5 border-b border-gray-100 flex items-center gap-3 bg-gray-50">
+            <input type="checkbox" checked={visibleAllSelected} onChange={toggleAllVisible}
+              className="w-4 h-4 rounded accent-blue-600 cursor-pointer" />
+            <span className="text-xs text-gray-500 font-medium">Chon tat ca bai hien thi</span>
+            {selectedExerciseIds.length > 0 && (
+              <button type="button" onClick={() => setSelectedExerciseIds([])}
+                className="ml-auto text-xs text-red-500 hover:text-red-700">Huy chon</button>
             )}
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Han nop (tuy chon)</label>
-              <input type="datetime-local" value={dueDate} onChange={e => setDueDate(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Ghi chu cho hoc sinh</label>
-              <input type="text" value={note} onChange={e => setNote(e.target.value)}
-                placeholder="vd: Nop truoc thu 6"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-            </div>
+          {/* Exercise list */}
+          <div className="overflow-y-auto" style={{ maxHeight: '500px' }}>
+            {exercisesForTopic.length === 0 ? (
+              <div className="py-12 text-center text-gray-400 text-sm">Khong co bai tap</div>
+            ) : (
+              exercisesForTopic.map(ex => {
+                const checked = selectedExerciseIds.includes(ex.id)
+                return (
+                  <label key={ex.id}
+                    className={`flex items-start gap-3 px-5 py-4 border-b border-gray-50 cursor-pointer transition-colors ${checked ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
+                    <input type="checkbox" checked={checked} onChange={() => toggleExercise(ex.id)}
+                      className="mt-0.5 w-4 h-4 rounded accent-blue-600 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className={`text-sm font-semibold leading-snug ${checked ? 'text-blue-800' : 'text-gray-800'}`}>
+                        {ex.title}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {ex.topicName}{ex.difficulty ? ` · ${ex.difficulty}` : ''}{ex.isDb ? ' · DB' : ''}
+                      </p>
+                      {ex.content && (
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
+                          {ex.content.replace(/\$[^$]*\$/g, '...').slice(0, 120)}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                )
+              })
+            )}
           </div>
-
-          <div className="flex gap-3 pt-1">
-            <button type="button" onClick={() => { setShowForm(false); resetForm() }}
-              className="px-4 py-2 border border-gray-200 text-gray-600 rounded-xl text-sm hover:bg-gray-50 transition-colors">
-              Huy
-            </button>
-            <button type="submit" disabled={saving}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60">
-              {saving ? 'Dang giao...' : '📤 Giao bai'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {loading ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center text-gray-400">Dang tai...</div>
-      ) : assignments.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-400">
-          <p className="text-4xl mb-3">📭</p>
-          <p>Chua co bai giao nao</p>
         </div>
-      ) : (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Bai tap</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Chu de</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Giao cho</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Han nop</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Hoan thanh</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ngay giao</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Xoa</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {assignments.map(a => (
-                <tr key={a.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-800">
-                    {a.exerciseTitle}
-                    {a.note && <p className="text-xs text-gray-400 mt-0.5">{a.note}</p>}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">{a.topicName}</td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">{assignedToLabel(a)}</td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {a.dueDate ? new Date(a.dueDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center gap-1 text-sm font-semibold">
-                      <span className="text-green-600">{a._count.completions}</span>
-                      <span className="text-gray-400">/{completionDenominator(a)}</span>
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">{new Date(a.createdAt).toLocaleDateString('vi-VN')}</td>
-                  <td className="px-4 py-3 text-center">
-                    <button
-                      onClick={() => handleDelete(a.id, a.exerciseTitle)}
-                      disabled={deletingId === a.id}
-                      className="px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
-                    >
-                      {deletingId === a.id ? '...' : '🗑️'}
-                    </button>
-                  </td>
+      </div>
+
+      {/* Assigned list table */}
+      <div className="mt-8">
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Danh sach bai da giao</h2>
+        {loading ? (
+          <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center text-gray-400">Dang tai...</div>
+        ) : assignments.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center text-gray-400">
+            <p className="text-3xl mb-2">📭</p><p>Chua co bai giao nao</p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Bai tap</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Chu de</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Giao cho</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Han nop</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Hoan thanh</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Ngay giao</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Xoa</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {assignments.map(a => (
+                  <tr key={a.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium text-gray-800">
+                      {a.exerciseTitle}
+                      {a.note && <p className="text-xs text-gray-400 mt-0.5">{a.note}</p>}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{a.topicName}</td>
+                    <td className="px-4 py-3 text-gray-600 text-xs">{assignedToLabel(a)}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {a.dueDate ? new Date(a.dueDate).toLocaleDateString('vi-VN') : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="inline-flex items-center gap-1 text-sm font-semibold">
+                        <span className="text-green-600">{a._count.completions}</span>
+                        <span className="text-gray-400">/{completionDenominator(a)}</span>
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">{new Date(a.createdAt).toLocaleDateString('vi-VN')}</td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => handleDelete(a.id, a.exerciseTitle)}
+                        disabled={deletingId === a.id}
+                        className="px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                      >
+                        {deletingId === a.id ? '...' : '🗑️'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
-
