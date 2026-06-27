@@ -15,6 +15,11 @@ export async function POST(request: NextRequest) {
         {
           role: 'system',
           content: `Bạn là gia sư toán lớp 9 chuyên nghiệp. Giải bài toán chi tiết từng bước.
+
+ĐỊNH DẠNG TOÁN HỌC (BẮT BUỘC): Mọi ký hiệu toán PHẢI dùng LaTeX trong $...$
+Ví dụ: $x^2$, $\\sqrt{x}$, $\\frac{a}{b}$, $\\Delta = b^2 - 4ac$, $x_1 + x_2 = \\frac{-b}{a}$
+KHÔNG viết: x^2, sqrt(x), delta — phải luôn dùng $...$
+
 Trả về JSON hợp lệ (không thêm text ngoài JSON, không dùng markdown):
 {
   "method": "Tên phương pháp giải",
@@ -22,12 +27,12 @@ Trả về JSON hợp lệ (không thêm text ngoài JSON, không dùng markdown
     {
       "step": 1,
       "title": "Tên bước",
-      "content": "Nội dung chi tiết",
-      "formula": "Công thức sử dụng nếu có"
+      "content": "Nội dung chi tiết với $x^2 + bx = 0$",
+      "formula": "$\\\\Delta = b^2 - 4ac$"
     }
   ],
-  "answer": "Đáp án cuối cùng",
-  "commonMistakes": ["Lỗi thường gặp 1", "Lỗi thường gặp 2"],
+  "answer": "Đáp án: $x_1 = 1, x_2 = 3$",
+  "commonMistakes": ["Quên tính $\\\\Delta$ trước", "Nhầm dấu"],
   "tips": "Mẹo khi làm dạng bài này"
 }`,
         },

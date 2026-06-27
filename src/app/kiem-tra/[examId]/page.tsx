@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { EXAM_TYPE_LABELS, type ExamContent, type ExamQuestion } from '@/lib/examStructures'
 import { useSession } from 'next-auth/react'
+import MathContent from '@/components/MathContent'
 
 interface PartResult {
   key: string; label: string; points: number; earned: number
@@ -194,9 +195,9 @@ export default function ExamPage() {
                           {r.studentAnswer && <div className="mb-2"><p className="text-xs font-semibold text-gray-500 mb-1">Bài làm của em:</p>
                             <p className="text-xs text-gray-700 bg-white rounded-lg p-2 border border-gray-100 whitespace-pre-wrap">{r.studentAnswer}</p></div>}
                           <div className="mb-2"><p className="text-xs font-semibold text-gray-500 mb-1">Đáp án đúng:</p>
-                            <p className="text-xs text-gray-700 bg-white rounded-lg p-2 border border-gray-100">{r.correctAnswer || '—'}</p></div>
+                            <p className="text-xs text-gray-700 bg-white rounded-lg p-2 border border-gray-100"><MathContent text={r.correctAnswer || '—'} /></p></div>
                           <div><p className="text-xs font-semibold text-gray-500 mb-1">🤖 Nhận xét của AI:</p>
-                            <p className="text-xs text-gray-700 leading-relaxed">{r.feedback}</p></div>
+                            <p className="text-xs text-gray-700 leading-relaxed"><MathContent text={r.feedback} /></p></div>
                         </div>
                       ))}
                     </div>
@@ -273,7 +274,7 @@ export default function ExamPage() {
                   /* Single part — show question content then one answer box */
                   <>
                     <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 leading-relaxed">
-                      {parts[0].content}
+                      <MathContent text={parts[0].content} />
                     </div>
                     <AnswerBox
                       label="Bài làm"
@@ -295,7 +296,7 @@ export default function ExamPage() {
                           <span className="text-xs font-bold text-indigo-600 bg-white border border-indigo-100 px-2 py-0.5 rounded">
                             {part.label}) {part.points}đ
                           </span>
-                          <span className="text-sm text-gray-800">{part.content}</span>
+                          <span className="text-sm text-gray-800"><MathContent text={part.content} /></span>
                         </div>
                         <div className="p-4">
                           <AnswerBox
@@ -354,6 +355,9 @@ function AnswerBox({ label, qKey, value, onChange, textareaRef, textareaRefs, qN
         ref={textareaRef}
         value={value}
         onChange={e => onChange(e.target.value)}
+        onPaste={e => { e.preventDefault(); alert('Không được phép dán văn bản vào ô bài làm. Hãy tự gõ lời giải!') }}
+        onDrop={e => e.preventDefault()}
+        onContextMenu={e => e.preventDefault()}
         placeholder={`Nhập lời giải cho Câu ${qNum}...`}
         rows={5}
         className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-y bg-white transition-colors"

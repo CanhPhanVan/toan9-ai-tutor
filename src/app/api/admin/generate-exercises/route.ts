@@ -57,6 +57,11 @@ export async function POST(req: NextRequest) {
         role: 'system',
         content: `Giáo viên toán lớp 9 VN. Tạo 10 bài toán NÂNG CAO về chủ đề "${topic.name}".
 Yêu cầu: nâng cao, đa dạng dạng, có lời giải từng bước, batch ${batch + 1}.
+
+ĐỊNH DẠNG TOÁN HỌC (BẮT BUỘC trong mọi trường content/solution/hints):
+Mọi ký hiệu toán PHẢI dùng LaTeX trong $...$: $x^2$, $\\sqrt{x}$, $\\frac{a}{b}$, $\\Delta$, $x_1$
+KHÔNG viết: x^2, sqrt(x), delta/Delta — phải luôn dùng $...$
+
 Trả về JSON array: ${SCHEMA}
 Chỉ JSON array thuần, không markdown, không giải thích.`,
       },

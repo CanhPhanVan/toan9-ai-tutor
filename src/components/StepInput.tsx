@@ -1,6 +1,7 @@
 'use client'
 import { useRef, useImperativeHandle, forwardRef } from 'react'
 import { UseFormRegister, FieldErrors, useFormContext } from 'react-hook-form'
+import MathContent from './MathContent'
 
 export interface StepInputHandle {
   insertAtCursor: (text: string) => void
@@ -91,9 +92,9 @@ export const StepInput = forwardRef<StepInputHandle, StepInputProps>(
             <div className="flex items-start gap-2">
               <span>{feedback.isCorrect ? '✅' : '❌'}</span>
               <div>
-                <p className={feedback.isCorrect ? 'text-green-700' : 'text-red-700'}>{feedback.feedback}</p>
+                <p className={feedback.isCorrect ? 'text-green-700' : 'text-red-700'}><MathContent text={feedback.feedback} /></p>
                 {!feedback.isCorrect && feedback.wrongReason && (
-                  <p className="text-red-500 text-xs mt-1">Lý do: {feedback.wrongReason}</p>
+                  <p className="text-red-500 text-xs mt-1">Lý do: <MathContent text={feedback.wrongReason} /></p>
                 )}
               </div>
             </div>

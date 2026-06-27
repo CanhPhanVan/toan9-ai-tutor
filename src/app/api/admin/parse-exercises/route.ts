@@ -30,6 +30,9 @@ BƯỚC 3: Trả về JSON array, MỖI PHẦN TỬ gồm:
 - "content": nội dung đầy đủ bài (gồm tất cả a), b), c)...)
 ${autoTopic ? `- "topicId": chọn từ danh sách:\n${TOPIC_LIST}\n- "topicName": tên chủ đề tương ứng` : ''}
 
+ĐỊNH DẠNG TOÁN HỌC (BẮT BUỘC trong trường content):
+Chuyển đổi ký hiệu toán thành LaTeX trong $...$: x^2 → $x^2$, sqrt(x) → $\\sqrt{x}$, Delta → $\\Delta$, >= → $\\geq$
+
 QUY TẮC QUAN TRỌNG:
 - Tách MỖI bài/câu thành 1 phần tử riêng (đừng gộp tất cả vào 1)
 - Các phần a), b), c) của CÙNG 1 bài thì GIỮ CHUNG trong 1 phần tử

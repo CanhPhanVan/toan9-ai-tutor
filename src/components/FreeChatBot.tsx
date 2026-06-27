@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import MathContent from './MathContent'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -88,7 +89,7 @@ export default function FreeChatBot({ problemContext }: FreeChatBotProps) {
                   : 'bg-gray-100 text-gray-800 rounded-bl-none'
               }`}
             >
-              {msg.content}
+              {msg.role === 'assistant' ? <MathContent text={msg.content} /> : msg.content}
             </div>
           </div>
         ))}

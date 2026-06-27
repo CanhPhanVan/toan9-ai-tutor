@@ -125,14 +125,18 @@ VI DU SAI (TUYET DOI KHONG lam the nay):
 - "Cho bieu thuc sau day:" (thieu noi dung!)
 - "Tinh gia tri bieu thuc:" (qua chung chung!)
 
+KY HIEU TOAN HOC (BAT BUOC trong content, solution, answer):
+Dung $...$ cho moi ky hieu toan: $x^2$, $\sqrt{x}$, $\frac{a}{b}$, $\Delta = b^2 - 4ac$, $x_1$, $\geq$, $\leq$
+Vi du content dung: "Tinh $A = \sqrt{12} + \sqrt{27} - \sqrt{48}$"
+Vi du content dung: "Tim $m$ de $x^2 - 2mx + m + 6 = 0$ co hai nghiem duong"
+
 Yeu cau:
 - "content": PHAI co day du bai toan voi so lieu cu the, hoc sinh doc xong la lam duoc ngay
-- "solution": loi giai chi tiet tung buoc
-- "answer": ket qua cuoi cung
-- KHONG dung dau backslash (\) trong bat ky truong nao
+- "solution": loi giai chi tiet tung buoc co ky hieu $...$
+- "answer": ket qua cuoi cung co ky hieu $...$
 
 Tra ve JSON (chi JSON, khong them text ngoai):
-{"questions":[{"number":1,"points":2.0,"topic":"ten chu de","parts":[{"label":"a","points":0.5,"content":"Tinh A = can(12) + can(27) - can(48)","solution":"can(12)=2can(3), can(27)=3can(3), can(48)=4can(3) => A=2can(3)+3can(3)-4can(3)=can(3)","answer":"A = can(3)"}]}]}`
+{"questions":[{"number":1,"points":2.0,"topic":"ten chu de","parts":[{"label":"a","points":0.5,"content":"Tinh $A = \\sqrt{12} + \\sqrt{27} - \\sqrt{48}$","solution":"$\\sqrt{12}=2\\sqrt{3}$, $\\sqrt{27}=3\\sqrt{3}$, $\\sqrt{48}=4\\sqrt{3}$ => $A=\\sqrt{3}$","answer":"$A = \\sqrt{3}$"}]}]}`
 
     const { chat, model: usedModel } = await groqChat([
       { role: 'system', content: systemPrompt },

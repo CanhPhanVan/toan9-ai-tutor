@@ -259,7 +259,7 @@ export default function HuongDanPage() {
                 </div>
 
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                  <p className="font-bold text-green-700 text-sm">✅ Đáp án: {solution.answer}</p>
+                  <p className="font-bold text-green-700 text-sm">✅ Đáp án: {renderMathContent(solution.answer)}</p>
                 </div>
 
                 {solution.commonMistakes && solution.commonMistakes.length > 0 && (

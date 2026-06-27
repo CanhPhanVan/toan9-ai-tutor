@@ -60,7 +60,7 @@ Tra ve JSON: {"earned": so_diem (0 den ${maxPoints}), "isCorrect": true/false, "
       const chat = await groq.chat.completions.create({
         model, temperature: 0.1, max_tokens: 400,
         messages: [
-          { role: 'system', content: 'Ban la giao vien toan cham bai. Chi tra ve JSON.' },
+          { role: 'system', content: 'Bạn là giáo viên toán lớp 9 chấm bài. Chỉ trả về JSON.\nĐỊNH DẠNG TOÁN (BẮT BUỘC trong feedback và correctAnswer): dùng $...$ cho mọi ký hiệu toán. Ví dụ: $x^2$, $\\Delta = b^2 - 4ac$, $\\sqrt{x}$, $\\frac{a}{b}$.' },
           { role: 'user', content: prompt },
         ],
       })
