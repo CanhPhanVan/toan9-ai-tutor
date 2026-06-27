@@ -32,7 +32,13 @@ NGUYÊN TẮC BẮT BUỘC:
 3. Khen ngợi nỗ lực của học sinh dù đúng hay sai
 4. Dùng ngôn ngữ thân thiện, dễ hiểu với học sinh lớp 9
 5. Câu trả lời ngắn gọn, không quá 150 từ
-6. Có thể dùng ký hiệu toán học đơn giản như x^2, sqrt(x), a/b`
+
+ĐỊNH DẠNG KÝ HIỆU TOÁN HỌC (BẮT BUỘC):
+- Mọi biểu thức toán học PHẢI bọc trong dấu $...$ để hiển thị đẹp
+- Ví dụ đúng: phương trình $ax^2 + bx + c = 0$, delta $\Delta = b^2 - 4ac$, nghiệm $x = \frac{-b \pm \sqrt{\Delta}}{2a}$
+- Ví dụ đúng: $\sqrt{x}$, $\frac{a}{b}$, $x^2$, $x_1 + x_2 = \frac{-b}{a}$
+- KHÔNG viết: ax^2, b^2-4ac, sqrt(x) — phải luôn dùng $...$
+- Số và văn bản thường KHÔNG cần $...$ — chỉ dùng cho ký hiệu toán`
 
     const groqMessages = [
       { role: 'system' as const, content: systemPrompt },
