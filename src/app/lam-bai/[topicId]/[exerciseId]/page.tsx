@@ -84,8 +84,6 @@ export default function ExercisePage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const aiHelpCountRef = useRef(0)
 
-  const [showPreview, setShowPreview] = useState(false)
-
   const handleKeyboardInsert = (text: string, cursorOffset?: number) => {
     const el = textareaRef.current
     if (!el) return
@@ -281,35 +279,19 @@ export default function ExercisePage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex-1">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-gray-900">✏️ Bài làm</h3>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowPreview(p => !p)}
-                    className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${showPreview ? 'bg-indigo-100 text-indigo-700 border-indigo-300' : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-indigo-200'}`}
-                  >
-                    {showPreview ? '📝 Gõ bài' : '🔢 Xem toán'}
-                  </button>
-                  <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-2 py-1 rounded-lg">🚫 Không paste</span>
-                </div>
+                <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-2 py-1 rounded-lg">🚫 Không paste</span>
               </div>
-              {showPreview ? (
-                <div className="w-full rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 min-h-[200px] text-sm leading-relaxed whitespace-pre-wrap">
-                  {answer
-                    ? <>{renderMathContent(answer)}</>
-                    : <span className="text-gray-400 italic">Bài làm sẽ hiện ở đây dưới dạng toán học...</span>
-                  }
-                </div>
-              ) : null}
+
+              {/* Ô gõ bài */}
               <textarea
-                style={{ display: showPreview ? 'none' : undefined }}
                 ref={textareaRef}
                 value={answer}
                 onChange={e => setAnswer(e.target.value)}
                 onPaste={e => { e.preventDefault(); alert('Không được phép dán văn bản vào ô bài làm. Hãy tự gõ lời giải của em!') }}
                 onDrop={e => { e.preventDefault() }}
                 onContextMenu={e => e.preventDefault()}
-                placeholder={`Trình bày lời giải tại đây...\n\nVí dụ:\nBước 1: ...\nBước 2: ...\nKết luận: ...`}
-                rows={16}
+                placeholder={`Trình bày lời giải tại đây...\n\nVí dụ phân số đẹp:\n$\\frac{\\sqrt{x}+1}{\\sqrt{x}-1}$\n\nVí dụ căn:\n$\\sqrt{3}$, $\\sqrt[3]{x}$\n\nGõ xong xem kết quả bên dưới ↓`}
+                rows={10}
                 className={`w-full rounded-xl border px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors resize-y ${
                   gradingResult
                     ? gradingResult.overallCorrect
@@ -318,6 +300,24 @@ export default function ExercisePage() {
                     : 'border-gray-200 bg-white hover:border-indigo-200'
                 }`}
               />
+
+              {/* Live math preview — luôn hiển thị */}
+              <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 overflow-hidden">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-100 border-b border-indigo-200">
+                  <span className="text-xs font-semibold text-indigo-600">🔢 Xem toán học (cập nhật tự động)</span>
+                </div>
+                <div className="px-4 py-3 min-h-[60px] text-sm leading-loose">
+                  {answer.trim() ? (
+                    <div className="whitespace-pre-wrap">{renderMathContent(answer)}</div>
+                  ) : (
+                    <div className="text-gray-400 text-xs space-y-1">
+                      <p>Bài làm sẽ hiện ở đây với phân số đẹp khi bạn gõ.</p>
+                      <p>Ví dụ gõ: <code className="bg-white px-1.5 py-0.5 rounded text-indigo-600">$\frac{"{\\sqrt{x}+1}"}{"{\\sqrt{x}-1}"}$</code> → hiển thị như đề bài</p>
+                      <p>Phân số nhanh: bấm nút <span className="font-bold text-indigo-600 border border-indigo-200 bg-white px-1.5 rounded">a/b</span> trên bàn phím toán</p>
+                    </div>
+                  )}
+                </div>
+              </div>
               {/* Hình vẽ đã chèn từ bảng vẽ */}
               {canvasImages.length > 0 && (
                 <div className="mt-3 space-y-2">
