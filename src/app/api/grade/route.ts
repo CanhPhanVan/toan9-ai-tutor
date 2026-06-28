@@ -60,7 +60,12 @@ Trả về JSON hợp lệ với format CHÍNH XÁC (không thêm text ngoài JS
     })
 
     const text = completion.choices[0]?.message?.content ?? ''
-    const result = parseAIJson(text) as { overallCorrect?: boolean }
+    const result = parseAIJson(text) as { overallCorrect?: boolean; steps?: { isCorrect: boolean }[] }
+
+    // Compute score from step results
+    const steps = result.steps ?? []
+    const correctSteps = steps.filter(s => s.isCorrect).length
+    const score = steps.length > 0 ? Math.round((correctSteps / steps.length) * 100) : (result.overallCorrect ? 100 : 0)
 
     // Save submission to DB (non-blocking)
     try {
@@ -75,6 +80,7 @@ Trả về JSON hợp lệ với format CHÍNH XÁC (không thêm text ngoài JS
           topicName: exercise.topicName ?? null,
           studentAnswer: (studentSteps as string[]).join('\n'),
           isCorrect: result.overallCorrect ?? null,
+          score,
           aiHelpCount: typeof aiHelpCount === 'number' ? aiHelpCount : 0,
         },
       })

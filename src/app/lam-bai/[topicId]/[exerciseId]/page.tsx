@@ -130,7 +130,7 @@ export default function ExercisePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          exercise: { title: exercise.title, content: exercise.content },
+          exercise: { id: exercise.id, title: exercise.title, content: exercise.content, topicId: exercise.topicId, topicName: topic?.name ?? '' },
           studentSteps: [answer],
           solution: exercise.solution,
           aiHelpCount: aiHelpCountRef.current,
