@@ -12,26 +12,32 @@ interface Parent {
 
 export default function AdminParentsPage() {
   const [parents, setParents] = useState<Parent[]>([])
+  const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
 
   // Create form
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [studentCode, setStudentCode] = useState('')
+  const [selectedStudentId, setSelectedStudentId] = useState('')
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState('')
 
   // Link student
   const [linkParentId, setLinkParentId] = useState<string | null>(null)
-  const [linkCode, setLinkCode] = useState('')
+  const [linkStudentId, setLinkStudentId] = useState('')
   const [linking, setLinking] = useState(false)
 
   const load = async () => {
     setLoading(true)
-    const res = await fetch('/api/admin/parents')
-    const data = await res.json()
-    setParents(data.parents ?? [])
+    const [pRes, sRes] = await Promise.all([
+      fetch('/api/admin/parents'),
+      fetch('/api/admin/students'),
+    ])
+    const [pData, sData] = await Promise.all([pRes.json(), sRes.json()])
+    setParents(pData.parents ?? [])
+    const arr: Student[] = Array.isArray(sData) ? sData : (sData.students ?? [])
+    setStudents(arr.filter(s => s.studentCode))
     setLoading(false)
   }
 
@@ -41,37 +47,47 @@ export default function AdminParentsPage() {
     e.preventDefault()
     setCreateError('')
     setCreating(true)
+    const selected = students.find(s => s.id === selectedStudentId)
     const res = await fetch('/api/admin/parents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, username, password, studentCode }),
+      body: JSON.stringify({ name, username, password, studentCode: selected?.studentCode ?? '' }),
     })
     const data = await res.json()
     setCreating(false)
     if (!res.ok) { setCreateError(data.error); return }
-    setName(''); setUsername(''); setPassword(''); setStudentCode('')
+    setName(''); setUsername(''); setPassword(''); setSelectedStudentId('')
     load()
   }
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Xóa tài khoản phụ huynh "${name}"?`)) return
+  const handleDelete = async (id: string, parentName: string) => {
+    if (!confirm(`Xóa tài khoản phụ huynh "${parentName}"?`)) return
     await fetch(`/api/admin/parents/${id}`, { method: 'DELETE' })
     load()
   }
 
   const handleLink = async (parentId: string) => {
-    if (!linkCode.trim()) return
+    if (!linkStudentId) return
+    const selected = students.find(s => s.id === linkStudentId)
+    if (!selected) return
     setLinking(true)
     const res = await fetch(`/api/admin/parents/${parentId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentCode: linkCode, action: 'link' }),
+      body: JSON.stringify({ studentCode: selected.studentCode, action: 'link' }),
     })
     const data = await res.json()
     setLinking(false)
     if (!res.ok) { alert(data.error); return }
-    setLinkParentId(null); setLinkCode('')
+    setLinkParentId(null); setLinkStudentId('')
     load()
+  }
+
+  // Students not yet linked to the parent being edited
+  const availableStudents = (parentId: string) => {
+    const parent = parents.find(p => p.id === parentId)
+    const linkedIds = new Set(parent?.childrenOf.map(c => c.student.id) ?? [])
+    return students.filter(s => !linkedIds.has(s.id))
   }
 
   return (
@@ -101,9 +117,16 @@ export default function AdminParentsPage() {
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1">Mã học sinh (HS9-XXXX)</label>
-            <input value={studentCode} onChange={e => setStudentCode(e.target.value)} placeholder="HS9-0001 (tuỳ chọn)"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 uppercase" />
+            <label className="text-xs font-medium text-gray-500 block mb-1">Gán học sinh (tuỳ chọn)</label>
+            <select value={selectedStudentId} onChange={e => setSelectedStudentId(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white">
+              <option value="">-- Chọn học sinh --</option>
+              {students.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.studentCode} · {s.name}
+                </option>
+              ))}
+            </select>
           </div>
           {createError && (
             <div className="sm:col-span-2 bg-red-50 text-red-600 text-sm px-4 py-2 rounded-xl border border-red-200">
@@ -121,7 +144,7 @@ export default function AdminParentsPage() {
 
       {/* Parents list */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-800">Danh sách phụ huynh ({parents.length})</h2>
         </div>
 
@@ -148,25 +171,30 @@ export default function AdminParentsPage() {
                           🎓 {s.name} · {s.studentCode}
                         </span>
                       ))}
-                      <button onClick={() => { setLinkParentId(p.id); setLinkCode('') }}
+                      <button onClick={() => { setLinkParentId(p.id); setLinkStudentId('') }}
                         className="text-xs text-indigo-600 hover:text-indigo-700 border border-indigo-200 bg-indigo-50 px-2.5 py-1 rounded-full font-medium transition-colors">
-                        + Gán HS
+                        + Gán thêm HS
                       </button>
                     </div>
 
-                    {/* Link input */}
+                    {/* Link dropdown */}
                     {linkParentId === p.id && (
                       <div className="flex items-center gap-2 mt-3">
-                        <input
-                          value={linkCode}
-                          onChange={e => setLinkCode(e.target.value.toUpperCase())}
-                          placeholder="HS9-0001"
-                          onKeyDown={e => e.key === 'Enter' && handleLink(p.id)}
-                          className="border border-indigo-200 rounded-lg px-3 py-1.5 text-sm w-36 focus:outline-none focus:ring-2 focus:ring-indigo-300 uppercase"
+                        <select
+                          value={linkStudentId}
+                          onChange={e => setLinkStudentId(e.target.value)}
+                          className="border border-indigo-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
                           autoFocus
-                        />
-                        <button onClick={() => handleLink(p.id)} disabled={linking}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors">
+                        >
+                          <option value="">-- Chọn học sinh --</option>
+                          {availableStudents(p.id).map(s => (
+                            <option key={s.id} value={s.id}>
+                              {s.studentCode} · {s.name}
+                            </option>
+                          ))}
+                        </select>
+                        <button onClick={() => handleLink(p.id)} disabled={linking || !linkStudentId}
+                          className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors">
                           {linking ? '...' : 'Gán'}
                         </button>
                         <button onClick={() => setLinkParentId(null)}
@@ -181,43 +209,6 @@ export default function AdminParentsPage() {
                 </div>
               </div>
             ))}
-          </div>
-        )}
-      </div>
-
-      {/* Students with codes */}
-      <StudentsWithCodes />
-    </div>
-  )
-}
-
-function StudentsWithCodes() {
-  const [students, setStudents] = useState<{ id: string; name: string; studentCode: string | null }[]>([])
-  useEffect(() => {
-    fetch('/api/admin/students').then(r => r.json()).then(d => {
-      const arr = Array.isArray(d) ? d : (d.students ?? [])
-      setStudents(arr)
-    })
-  }, [])
-
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100">
-        <h2 className="font-semibold text-gray-800">📋 Mã học sinh</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Dùng mã này để gán phụ huynh với học sinh</p>
-      </div>
-      <div className="divide-y divide-gray-50 max-h-80 overflow-y-auto">
-        {students.filter(s => s.studentCode).map(s => (
-          <div key={s.id} className="px-6 py-3 flex items-center justify-between">
-            <span className="text-sm text-gray-700">{s.name}</span>
-            <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg">
-              {s.studentCode}
-            </span>
-          </div>
-        ))}
-        {students.filter(s => !s.studentCode).length > 0 && (
-          <div className="px-6 py-2 text-xs text-gray-400 italic">
-            {students.filter(s => !s.studentCode).length} học sinh chưa có mã
           </div>
         )}
       </div>

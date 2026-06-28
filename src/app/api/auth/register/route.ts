@@ -24,8 +24,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email này đã được đăng ký' }, { status: 409 })
 
     const hashed = await bcrypt.hash(password, 10)
+    const isStudent = role !== 'parent'
+
+    // Auto-generate student code for new students
+    let studentCode: string | undefined
+    if (isStudent) {
+      const last = await prisma.user.findFirst({
+        where: { studentCode: { not: null } },
+        orderBy: { studentCode: 'desc' },
+        select: { studentCode: true },
+      })
+      const lastNum = last?.studentCode ? parseInt(last.studentCode.replace('HS9-', '')) : 0
+      studentCode = 'HS9-' + String(lastNum + 1).padStart(4, '0')
+    }
+
     const user = await prisma.user.create({
-      data: { name, email, password: hashed, role: role === 'parent' ? 'admin' : 'student' },
+      data: { name, email, password: hashed, role: isStudent ? 'student' : 'admin', studentCode },
     })
 
     return NextResponse.json({ id: user.id, name: user.name, role: user.role })
