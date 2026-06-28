@@ -30,7 +30,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   if (!await requireAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { name, username, password, studentCode } = await req.json()
+  const { name, username, password, studentCode, studentId } = await req.json()
   if (!name || !username || !password)
     return NextResponse.json({ error: 'Thiếu tên, tên đăng nhập hoặc mật khẩu' }, { status: 400 })
   if (password.length < 6)
@@ -40,15 +40,14 @@ export async function POST(req: NextRequest) {
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) return NextResponse.json({ error: 'Tên đăng nhập đã tồn tại' }, { status: 409 })
 
-  // Validate student code if provided
+  // Find student by id (preferred) or studentCode
   let student = null
-  if (studentCode?.trim()) {
-    student = await prisma.user.findUnique({
-      where: { studentCode: studentCode.trim().toUpperCase() },
-    })
-    if (!student) return NextResponse.json({ error: `Không tìm thấy học sinh với mã ${studentCode}` }, { status: 404 })
-    if (student.role !== 'student') return NextResponse.json({ error: 'Mã HS không hợp lệ' }, { status: 400 })
+  if (studentId) {
+    student = await prisma.user.findUnique({ where: { id: studentId } })
+  } else if (studentCode?.trim()) {
+    student = await prisma.user.findUnique({ where: { studentCode: studentCode.trim().toUpperCase() } })
   }
+  if (student && student.role !== 'student') student = null
 
   const hashed = await bcrypt.hash(password, 10)
   const parent = await prisma.user.create({

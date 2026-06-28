@@ -12,18 +12,23 @@ async function requireAdmin() {
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!await requireAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { id: parentId } = await params
-  const { studentCode, action } = await req.json() // action: 'link' | 'unlink'
+  const body = await req.json()
+  const { studentCode, studentId, action } = body
 
   if (action === 'unlink') {
-    const { studentId } = await req.json()
     await prisma.parentStudent.deleteMany({ where: { parentId, studentId } })
     return NextResponse.json({ ok: true })
   }
 
-  if (!studentCode?.trim()) return NextResponse.json({ error: 'Thiếu mã HS' }, { status: 400 })
-  const student = await prisma.user.findUnique({ where: { studentCode: studentCode.trim().toUpperCase() } })
+  // Find student by id or studentCode
+  let student = null
+  if (studentId) {
+    student = await prisma.user.findUnique({ where: { id: studentId } })
+  } else if (studentCode?.trim()) {
+    student = await prisma.user.findUnique({ where: { studentCode: studentCode.trim().toUpperCase() } })
+  }
   if (!student || student.role !== 'student')
-    return NextResponse.json({ error: `Không tìm thấy học sinh với mã ${studentCode}` }, { status: 404 })
+    return NextResponse.json({ error: 'Không tìm thấy học sinh' }, { status: 404 })
 
   await prisma.parentStudent.upsert({
     where: { parentId_studentId: { parentId, studentId: student.id } },

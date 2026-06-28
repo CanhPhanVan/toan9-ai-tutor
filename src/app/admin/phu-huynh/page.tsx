@@ -37,7 +37,7 @@ export default function AdminParentsPage() {
     const [pData, sData] = await Promise.all([pRes.json(), sRes.json()])
     setParents(pData.parents ?? [])
     const arr: Student[] = Array.isArray(sData) ? sData : (sData.students ?? [])
-    setStudents(arr.filter(s => s.studentCode))
+    setStudents(arr)
     setLoading(false)
   }
 
@@ -47,11 +47,10 @@ export default function AdminParentsPage() {
     e.preventDefault()
     setCreateError('')
     setCreating(true)
-    const selected = students.find(s => s.id === selectedStudentId)
     const res = await fetch('/api/admin/parents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, username, password, studentCode: selected?.studentCode ?? '' }),
+      body: JSON.stringify({ name, username, password, studentId: selectedStudentId || undefined }),
     })
     const data = await res.json()
     setCreating(false)
@@ -68,13 +67,12 @@ export default function AdminParentsPage() {
 
   const handleLink = async (parentId: string) => {
     if (!linkStudentId) return
-    const selected = students.find(s => s.id === linkStudentId)
-    if (!selected) return
+    if (!linkStudentId) return
     setLinking(true)
     const res = await fetch(`/api/admin/parents/${parentId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentCode: selected.studentCode, action: 'link' }),
+      body: JSON.stringify({ studentId: linkStudentId, action: 'link' }),
     })
     const data = await res.json()
     setLinking(false)
@@ -123,7 +121,7 @@ export default function AdminParentsPage() {
               <option value="">-- Chọn học sinh --</option>
               {students.map(s => (
                 <option key={s.id} value={s.id}>
-                  {s.studentCode} · {s.name}
+                  {s.studentCode ? `${s.studentCode} · ` : ''}{s.name}
                 </option>
               ))}
             </select>
