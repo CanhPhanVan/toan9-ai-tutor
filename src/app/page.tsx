@@ -7,6 +7,7 @@ import { AssignmentBanner } from '@/components/AssignmentBanner'
 export default async function HomePage() {
   const session = await auth()
   const isLoggedIn = !!session
+  const isParent = session?.user?.role === 'parent'
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
@@ -21,14 +22,14 @@ export default async function HomePage() {
             </div>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm text-gray-600">
-            {isLoggedIn && (
+            {isLoggedIn && !isParent && (
               <>
                 <Link href="/bai-tap-giao" className="hover:text-amber-600 transition-colors font-medium text-amber-600">📋 Bài giao</Link>
                 <Link href="/lam-bai" className="hover:text-indigo-600 transition-colors font-medium">Làm bài</Link>
                 <Link href="/kiem-tra" className="hover:text-indigo-600 transition-colors font-medium">Kiểm tra</Link>
               </>
             )}
-            <Link href="/huong-dan" className="hover:text-indigo-600 transition-colors font-medium">Hướng dẫn</Link>
+            {!isParent && <Link href="/huong-dan" className="hover:text-indigo-600 transition-colors font-medium">Hướng dẫn</Link>}
             <NavAuth />
           </nav>
           {/* Mobile nav */}
