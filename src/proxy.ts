@@ -13,9 +13,15 @@ export default auth((req) => {
     if (!session) {
       return NextResponse.redirect(new URL('/login?callbackUrl=/admin', req.url))
     }
-    if (session.user.role !== 'parent') {
+    if (!['admin', 'teacher'].includes(session.user.role ?? '')) {
       return NextResponse.redirect(new URL('/?error=forbidden', req.url))
     }
+  }
+
+  // Protect parent dashboard
+  if (pathname.startsWith('/phu-huynh')) {
+    if (!session) return NextResponse.redirect(new URL('/login?callbackUrl=/phu-huynh', req.url))
+    if (session.user.role !== 'parent') return NextResponse.redirect(new URL('/?error=forbidden', req.url))
   }
 
   // Protect student pages — any logged-in user
@@ -31,5 +37,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ['/admin/:path*', '/lam-bai/:path*', '/ly-thuyet/:path*', '/kiem-tra/:path*'],
+  matcher: ['/admin/:path*', '/phu-huynh/:path*', '/lam-bai/:path*', '/ly-thuyet/:path*', '/kiem-tra/:path*'],
 }

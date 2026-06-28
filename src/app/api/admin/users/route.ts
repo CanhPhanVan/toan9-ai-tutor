@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 
 async function requireAdmin() {
   const session = await auth()
-  if (!session || session.user.role !== 'parent') return null
+  if (!session || !['admin', 'teacher'].includes(session.user.role ?? '')) return null
   return session
 }
 
@@ -13,7 +13,7 @@ export async function GET() {
   if (!await requireAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const users = await prisma.user.findMany({
-    where: { role: { in: ['parent', 'admin'] } },
+    where: { role: { in: ['admin', 'teacher'] } },
     orderBy: { createdAt: 'desc' },
     select: { id: true, name: true, email: true, role: true, createdAt: true },
   })
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   if (existing) return NextResponse.json({ error: 'Email này đã được đăng ký' }, { status: 409 })
 
   const hashed = await bcrypt.hash(password, 10)
-  const user = await prisma.user.create({ data: { name, email, password: hashed, role: 'parent' } })
+  const user = await prisma.user.create({ data: { name, email, password: hashed, role: 'admin' } })
   return NextResponse.json({ id: user.id, name: user.name, role: user.role })
 }
 

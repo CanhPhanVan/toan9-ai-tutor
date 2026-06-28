@@ -11,10 +11,22 @@ model User {
   name        String
   email       String       @unique
   password    String
-  role        String       @default("student")  // "student" | "parent"
+  role        String       @default("student")  // "student" | "admin" | "teacher" | "parent"
+  studentCode String?      @unique              // HS9-0001 format, for students only
   createdAt   DateTime     @default(now())
-  submissions Submission[]
+  submissions  Submission[]
   examAttempts ExamAttempt[]
+  parentsOf    ParentStudent[] @relation("StudentRelations")
+  childrenOf   ParentStudent[] @relation("ParentRelations")
+}
+
+model ParentStudent {
+  id        String @id @default(cuid())
+  parentId  String
+  studentId String
+  parent    User   @relation("ParentRelations",  fields: [parentId],  references: [id], onDelete: Cascade)
+  student   User   @relation("StudentRelations", fields: [studentId], references: [id], onDelete: Cascade)
+  @@unique([parentId, studentId])
 }
 
 model DbExercise {

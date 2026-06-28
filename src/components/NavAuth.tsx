@@ -22,9 +22,14 @@ export function NavAuth() {
 
   return (
     <div className="flex items-center gap-3">
-      {session.user.role === 'parent' && (
+      {['admin', 'teacher'].includes(session.user.role ?? '') && (
         <Link href="/admin" className="text-xs bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-lg font-medium hover:bg-amber-100 transition-colors">
           👑 Quản trị
+        </Link>
+      )}
+      {session.user.role === 'parent' && (
+        <Link href="/phu-huynh" className="text-xs bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-lg font-medium hover:bg-green-100 transition-colors">
+          👨‍👩‍👧 Theo dõi con
         </Link>
       )}
       <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 border border-gray-100">

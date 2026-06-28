@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 
 async function requireAdmin() {
   const session = await auth()
-  if (!session || session.user.role !== 'parent') return null
+  if (!session || !['admin', 'teacher'].includes(session.user.role ?? '')) return null
   return session
 }
 

@@ -15,12 +15,13 @@ const NAV = [
   { href: '/admin/review',    label: 'Kiểm duyệt AI',        icon: '🔍' },
   { href: '/admin/stats',     label: 'Thống kê lỗi sai',     icon: '📉' },
   { href: '/admin/history',   label: 'Lịch sử học sinh',     icon: '🗓️' },
-  { href: '/admin/users',     label: 'Quản trị viên',        icon: '👤' },
+  { href: '/admin/users',       label: 'Quản trị viên',        icon: '👤' },
+  { href: '/admin/phu-huynh',  label: 'Phụ huynh',             icon: '👨‍👩‍👧' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
-  if (!session || session.user.role !== 'parent') redirect('/login?callbackUrl=/admin')
+  if (!session || !['admin', 'teacher'].includes(session.user.role ?? '')) redirect('/login?callbackUrl=/admin')
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
