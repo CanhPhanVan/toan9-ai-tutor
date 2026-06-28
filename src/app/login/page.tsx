@@ -78,15 +78,9 @@ function LoginForm() {
             Đăng ký ngay
           </Link>
         </p>
-        <div className="text-xs text-gray-400 space-y-1">
-          <p>Phụ huynh/Giáo viên → liên hệ admin để được cấp tài khoản</p>
-          <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-left space-y-1 mt-2">
-            <p className="font-semibold text-gray-500 text-[11px] uppercase tracking-wide">Tài khoản demo</p>
-            <p>🎓 Học sinh: <span className="font-mono text-gray-600">hs001 / 123456</span></p>
-            <p>👨‍👩‍👧 Phụ huynh: <span className="font-mono text-gray-600">parent / parent123</span></p>
-            <p>👑 Admin: <span className="font-mono text-gray-600">admin / admin123</span></p>
-          </div>
-        </div>
+        <p className="text-xs text-gray-400">
+          Phụ huynh/Giáo viên → liên hệ admin để được cấp tài khoản
+        </p>
       </div>
     </div>
   )
