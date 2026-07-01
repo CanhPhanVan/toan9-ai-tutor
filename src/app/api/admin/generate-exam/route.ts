@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Groq from 'groq-sdk'
+import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { EXAM_STRUCTURES, type ExamContent, type ExamQuestion } from '@/lib/examStructures'
 
@@ -98,6 +99,10 @@ function safeParseJSON(raw: string): { questions?: ExamQuestion[] } {
 }
 
 export async function POST(req: NextRequest) {
+  const session = await auth()
+  if (!session || !['admin', 'teacher'].includes(session.user.role ?? ''))
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
     const { type, examIndex = 0, totalExisting = 0 } = await req.json()
     const structure = EXAM_STRUCTURES[type as keyof typeof EXAM_STRUCTURES]
