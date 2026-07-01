@@ -3,6 +3,7 @@ import Groq from 'groq-sdk'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { EXAM_STRUCTURES, type ExamContent, type ExamQuestion } from '@/lib/examStructures'
+import { findDuplicateIndex } from '@/lib/similarity'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30  // 1 exam per call
@@ -29,13 +30,16 @@ async function groqChat(messages: { role: string; content: string }[], maxTokens
         max_tokens: maxTokens,
         messages: messages as Parameters<typeof groq.chat.completions.create>[0]['messages'],
       })
-      return { chat, model }
+      const raw = chat.choices[0]?.message?.content ?? '{}'
+      const parsed = safeParseJSON(raw) // throws if AI returned bad/unparseable content
+      return { parsed, model }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
       const skip = msg.includes('429') || msg.includes('rate_limit') ||
-                   msg.includes('decommissioned') || msg.includes('model_not_active')
+                   msg.includes('decommissioned') || msg.includes('model_not_active') ||
+                   msg.includes('AI khong tra ve JSON') || msg.includes('JSON parse that bai')
       if (skip) {
-        console.warn(`[gen-exam] ${model} unavailable, trying next...`)
+        console.warn(`[gen-exam] ${model} failed (${msg.slice(0, 80)}), trying next...`)
         lastError = e instanceof Error ? e : new Error(msg)
         continue
       }
@@ -44,8 +48,8 @@ async function groqChat(messages: { role: string; content: string }[], maxTokens
   }
   const lastMsg = lastError?.message ?? ''
   const waitMatch = lastMsg.match(/try again in ([^".\n]+)/)
-  const err = Object.assign(lastError ?? new Error('All models rate limited'), {
-    isRateLimit: true,
+  const err = Object.assign(lastError ?? new Error('All models rate limited or returned invalid JSON'), {
+    isRateLimit: lastMsg.includes('429') || lastMsg.includes('rate_limit'),
     retryAfter: waitMatch?.[1] ?? null,
   })
   throw err
@@ -115,9 +119,29 @@ export async function POST(req: NextRequest) {
       return `Cau ${q.number} (${q.points}d): ${q.topic}. ${parts.parts.map((p: string, i: number) => `${p}) ${parts.partPoints[i]}d`).join(', ')}.`
     }).join('\n')
 
+    // Existing exams of the same type — used both to steer the AI away from repeats
+    // and to hard-reject the exam if any question part is a near-duplicate.
+    const existingExams = await prisma.exam.findMany({
+      where: { type },
+      select: { content: true },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+    })
+    const existingPartContents: string[] = []
+    for (const e of existingExams) {
+      try {
+        const parsed = JSON.parse(e.content) as ExamContent
+        for (const q of parsed.questions ?? []) {
+          for (const p of q.parts ?? []) if (p.content) existingPartContents.push(p.content)
+        }
+      } catch { /* skip malformed stored content */ }
+    }
+    const avoidSnippets = existingPartContents.slice(0, 60).map(c => `- ${c.slice(0, 90)}`).join('\n')
+
     const systemPrompt = `Ban la giao vien toan lop 9 TPHCM. Soan 1 de thi so ${examIndex + 1} theo cau truc:
 
 ${structureDesc}
+${avoidSnippets ? `\nKHONG duoc trung hoac gan giong cac cau da ra sau day (doi han so lieu VA dang bai):\n${avoidSnippets}\n` : ''}
 
 VI DU DUNG (content phai co so lieu cu the nhu the nay):
 - "Tinh A = can(12) + can(27) - can(48)"
@@ -143,17 +167,27 @@ Yeu cau:
 Tra ve JSON (chi JSON, khong them text ngoai):
 {"questions":[{"number":1,"points":2.0,"topic":"ten chu de","parts":[{"label":"a","points":0.5,"content":"Tinh $A = \\sqrt{12} + \\sqrt{27} - \\sqrt{48}$","solution":"$\\sqrt{12}=2\\sqrt{3}$, $\\sqrt{27}=3\\sqrt{3}$, $\\sqrt{48}=4\\sqrt{3}$ => $A=\\sqrt{3}$","answer":"$A = \\sqrt{3}$"}]}]}`
 
-    const { chat, model: usedModel } = await groqChat([
+    const { parsed, model: usedModel } = await groqChat([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: `Soan de thi so ${examIndex + 1}. BAT BUOC: moi "content" phai co so lieu va phuong trinh cu the, hoc sinh doc xong la biet can lam gi. Chi tra ve JSON.` },
     ])
-
-    const raw = chat.choices[0]?.message?.content ?? '{}'
-    const parsed = safeParseJSON(raw)
     const questions: ExamQuestion[] = (parsed.questions ?? []).map(q => ({
       ...q,
       parts: q.parts ?? [],
     }))
+
+    // Reject the whole exam if any part duplicates an existing one or another part
+    // in this same exam — safer than silently saving a near-copy.
+    const seenInThisExam: string[] = []
+    for (const q of questions) {
+      for (const p of q.parts ?? []) {
+        if (!p.content) continue
+        if (findDuplicateIndex(p.content, existingPartContents) !== -1 || findDuplicateIndex(p.content, seenInThisExam) !== -1) {
+          throw new Error(`De bi trung noi dung voi de da co (cau ${q.number}${p.label ? p.label : ''}), thu lai`)
+        }
+        seenInThisExam.push(p.content)
+      }
+    }
 
     const typeLabels: Record<string, string> = {
       'tuyen-sinh': 'Tuyen sinh lop 10',

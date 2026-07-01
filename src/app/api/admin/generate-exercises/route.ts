@@ -3,6 +3,7 @@ import Groq from 'groq-sdk'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { TOPICS } from '@/lib/topics'
+import { findDuplicateIndex } from '@/lib/similarity'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30  // 1 batch = 1 Groq call, fast
@@ -107,12 +108,23 @@ export async function POST(req: NextRequest) {
     const topic = TOPICS.find(t => t.id === topicId)
     if (!topic) return NextResponse.json({ error: 'Chủ đề không tồn tại' }, { status: 400 })
 
+    // Existing exercises for this topic — used both to steer the AI away from repeats
+    // and to hard-filter near-duplicates after generation.
+    const existing = await prisma.dbExercise.findMany({
+      where: { topicId },
+      select: { title: true, content: true },
+      orderBy: { createdAt: 'desc' },
+      take: 80,
+    })
+    const existingSignatures = existing.map(e => `${e.title} ${e.content.slice(0, 150)}`)
+    const avoidTitles = existing.slice(0, 40).map(e => `- ${e.title}`).join('\n')
+
     const messages = [
       {
         role: 'system',
         content: `Giáo viên toán lớp 9 VN. Tạo 10 bài toán NÂNG CAO về chủ đề "${topic.name}".
 Yêu cầu: nâng cao, đa dạng dạng, có lời giải từng bước, batch ${batch + 1}.
-
+${avoidTitles ? `\nKHÔNG được trùng hoặc gần giống các bài đã có sau đây (đổi hẳn dạng bài, đừng chỉ đổi số liệu/tên đại lượng):\n${avoidTitles}\n` : ''}
 ĐỊNH DẠNG TOÁN HỌC (BẮT BUỘC trong mọi trường content/solution/hints):
 Mọi ký hiệu toán PHẢI dùng LaTeX trong $...$: $x^2$, $\\sqrt{x}$, $\\frac{a}{b}$, $\\Delta$, $x_1$
 KHÔNG viết: x^2, sqrt(x), delta/Delta — phải luôn dùng $...$
@@ -122,7 +134,7 @@ Chỉ JSON array thuần, không markdown, không giải thích.`,
       },
       {
         role: 'user',
-        content: `Tạo 10 bài nâng cao về "${topic.name}", batch ${batch + 1}, dạng KHÁC nhau.`,
+        content: `Tạo 10 bài nâng cao về "${topic.name}", batch ${batch + 1}, dạng KHÁC nhau và khác các bài đã có.`,
       },
     ]
 
@@ -130,12 +142,23 @@ Chỉ JSON array thuần, không markdown, không giải thích.`,
     console.log(`[gen] Used model: ${usedModel} for ${topicId} b${batch}`)
 
     let saved = 0
+    let skipped = 0
+    const acceptedSignatures = [...existingSignatures]
     for (const ex of exercises) {
+      const title = String(ex.title ?? '').slice(0, 200)
+      const content = String(ex.content ?? '')
+      const signature = `${title} ${content.slice(0, 150)}`
+
+      if (findDuplicateIndex(signature, acceptedSignatures) !== -1) {
+        skipped++
+        continue
+      }
+
       try {
         await prisma.dbExercise.create({
           data: {
-            title: String(ex.title ?? '').slice(0, 200),
-            content: String(ex.content ?? ''),
+            title,
+            content,
             topicId: topic.id,
             topicName: topic.name,
             difficulty: 'advanced',
@@ -146,12 +169,13 @@ Chỉ JSON array thuần, không markdown, không giải thích.`,
           },
         })
         saved++
+        acceptedSignatures.push(signature)
       } catch (e) {
         console.error(`[gen] DB error ${topicId}:`, e)
       }
     }
 
-    return NextResponse.json({ saved, topicId, topicName: topic.name, batch, model: usedModel })
+    return NextResponse.json({ saved, skipped, topicId, topicName: topic.name, batch, model: usedModel })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     const isRateLimit = msg.includes('429') || msg.includes('rate_limit')

@@ -55,7 +55,8 @@ export default function AdminGeneratePage() {
           } else {
             topicTotal += data.saved ?? 0
             const modelTag = data.model ? ` [${data.model.replace('llama-3.1-8b-instant','8b').replace('gemma2-9b-it','gemma2').replace('mixtral-8x7b-32768','mixtral').replace('llama-3.3-70b-versatile','70b')}]` : ''
-            addLog(`  ✅ Batch ${batch + 1}: +${data.saved} bài (tổng: ${topicTotal})${modelTag}`)
+            const dupTag = data.skipped ? ` (bỏ ${data.skipped} trùng)` : ''
+            addLog(`  ✅ Batch ${batch + 1}: +${data.saved} bài (tổng: ${topicTotal})${dupTag}${modelTag}`)
           }
         } catch (e) {
           addLog(`  ❌ Lỗi kết nối batch ${batch + 1}: ${e}`)

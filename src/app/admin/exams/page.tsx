@@ -58,7 +58,8 @@ export default function AdminExamsPage() {
           break
         }
         if (data.error) {
-          setLog(prev => [...prev, `  ❌ Đề ${i + 1}: ${data.error.slice(0, 100)}`])
+          const isDup = data.error.includes('trung noi dung')
+          setLog(prev => [...prev, `  ${isDup ? '🔁' : '❌'} Đề ${i + 1}: ${data.error.slice(0, 100)}`])
         } else {
           created++
           const modelTag = data.model ? ` [${data.model.split('-').slice(0,3).join('-')}]` : ''
