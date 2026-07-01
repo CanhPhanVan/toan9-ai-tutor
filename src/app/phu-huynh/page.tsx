@@ -75,7 +75,7 @@ function WeekdayBars({ data }: { data: WeekdayPoint[] }) {
     <div className="space-y-2">
       {data.map((d, i) => (
         <div key={i} className="flex items-center gap-3">
-          <span className="text-xs text-gray-500 w-14 text-right shrink-0">{d.label}</span>
+          <span className="text-xs text-gray-500 w-20 text-right shrink-0">{d.label}</span>
           <div className="flex-1 bg-gray-100 rounded-full h-5 relative overflow-hidden">
             {d.total > 0 && (
               <div className="h-5 rounded-full transition-all"
@@ -121,14 +121,22 @@ function fmtTime(iso: string) {
   return `${hhmm} ${date}`
 }
 
+const PERIODS: { key: 'day' | 'week' | 'month'; label: string }[] = [
+  { key: 'day', label: 'Ngày' },
+  { key: 'week', label: 'Tuần' },
+  { key: 'month', label: 'Tháng' },
+]
+
 export default function PhuHuynhDashboard() {
   const { data: session } = useSession()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week')
 
   useEffect(() => {
-    fetch('/api/phu-huynh/dashboard').then(r => r.json()).then(d => { setData(d); setLoading(false) })
-  }, [])
+    setLoading(true)
+    fetch(`/api/phu-huynh/dashboard?period=${period}`).then(r => r.json()).then(d => { setData(d); setLoading(false) })
+  }, [period])
 
   if (loading) return (
     <div className="min-h-screen bg-white flex items-center justify-center text-gray-400 animate-pulse">
@@ -164,10 +172,30 @@ export default function PhuHuynhDashboard() {
       ) : (
         <div className="px-6 py-6 space-y-5 max-w-[1400px] mx-auto">
 
-          {/* Row 1: Weekday chart + Donut */}
+          {/* Period selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-500">Xem theo:</span>
+            <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1">
+              {PERIODS.map(p => (
+                <button
+                  key={p.key}
+                  onClick={() => setPeriod(p.key)}
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                    period === p.key ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 1: Chart + Donut */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h2 className="text-sm font-semibold text-gray-700 mb-4">📅 Tiến độ 7 ngày qua</h2>
+              <h2 className="text-sm font-semibold text-gray-700 mb-4">
+                📅 Tiến độ {period === 'day' ? 'hôm nay' : period === 'week' ? '7 ngày qua' : '4 tuần qua'}
+              </h2>
               <WeekdayBars data={data.weekdayData} />
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-5">

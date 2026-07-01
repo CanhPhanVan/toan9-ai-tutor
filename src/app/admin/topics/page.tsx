@@ -1,8 +1,18 @@
 import { TOPICS } from '@/lib/topics'
 import { EXERCISES } from '@/lib/exercises'
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 
-export default function AdminTopicsPage() {
+export default async function AdminTopicsPage() {
+  const dbCounts = await prisma.dbExercise.groupBy({
+    by: ['topicId'],
+    where: { status: 'published' },
+    _count: { id: true },
+  })
+  const dbCountMap: Record<string, number> = Object.fromEntries(
+    dbCounts.map(r => [r.topicId, r._count.id])
+  )
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
@@ -23,7 +33,9 @@ export default function AdminTopicsPage() {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {TOPICS.map(topic => {
-              const exCount = EXERCISES.filter(e => e.topicId === topic.id).length
+              const staticCount = EXERCISES.filter(e => e.topicId === topic.id).length
+              const dbCount = dbCountMap[topic.id] ?? 0
+              const exCount = staticCount + dbCount
               const difficulties = { easy: 0, medium: 0, hard: 0, advanced: 0 }
               EXERCISES.filter(e => e.topicId === topic.id).forEach(e => {
                 if (e.difficulty in difficulties) difficulties[e.difficulty as keyof typeof difficulties]++
@@ -39,6 +51,7 @@ export default function AdminTopicsPage() {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className="font-semibold text-indigo-600">{exCount}</span>
+                    {dbCount > 0 && <span className="text-xs text-gray-400 ml-1">({staticCount} có sẵn + {dbCount} DB)</span>}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-1 text-xs">

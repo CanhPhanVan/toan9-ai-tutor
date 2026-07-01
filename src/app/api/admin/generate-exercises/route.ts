@@ -101,7 +101,7 @@ Chỉ JSON array thuần, không markdown, không giải thích.`,
             method: String(ex.method ?? ''),
             solution: String(ex.solution ?? ''),
             hints: String(ex.hints ?? ''),
-            status: 'approved',
+            status: 'published',
           },
         })
         saved++

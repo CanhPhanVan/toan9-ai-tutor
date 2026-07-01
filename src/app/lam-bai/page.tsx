@@ -3,11 +3,13 @@ import { TOPICS } from '@/lib/topics'
 import { EXERCISES } from '@/lib/exercises'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export default async function LamBaiPage() {
   // Đếm bài trong DB theo từng chủ đề
   const dbCounts = await prisma.dbExercise.groupBy({
     by: ['topicId'],
-    where: { status: 'approved' },
+    where: { status: 'published' },
     _count: { id: true },
   })
   const dbCountMap: Record<string, number> = Object.fromEntries(

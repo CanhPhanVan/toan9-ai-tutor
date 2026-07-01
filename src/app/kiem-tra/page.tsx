@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { EXAM_TYPE_LABELS } from '@/lib/examStructures'
 
+export const dynamic = 'force-dynamic'
+
 export default async function KiemTraPage() {
   const exams = await prisma.exam.findMany({
     where: { status: 'published' },

@@ -3,7 +3,7 @@ import { EXERCISES } from '@/lib/exercises'
 import { TOPICS } from '@/lib/topics'
 
 export default async function AdminDashboard() {
-  const [totalStudents, totalSubmissions, recentSubmissions, topWrong] = await Promise.all([
+  const [totalStudents, totalSubmissions, recentSubmissions, topWrong, dbExerciseCount] = await Promise.all([
     prisma.user.count({ where: { role: 'student' } }),
     prisma.submission.count(),
     prisma.submission.findMany({
@@ -18,6 +18,7 @@ export default async function AdminDashboard() {
       orderBy: { _count: { id: 'desc' } },
       take: 5,
     }),
+    prisma.dbExercise.count({ where: { status: 'published' } }),
   ])
 
   const correctCount = await prisma.submission.count({ where: { isCorrect: true } })
@@ -27,7 +28,7 @@ export default async function AdminDashboard() {
     { label: 'Học sinh', value: totalStudents, icon: '👩‍🎓', color: 'bg-blue-50 border-blue-200 text-blue-700' },
     { label: 'Lượt nộp bài', value: totalSubmissions, icon: '📝', color: 'bg-indigo-50 border-indigo-200 text-indigo-700' },
     { label: 'Tỉ lệ đúng', value: `${rate}%`, icon: '✅', color: 'bg-green-50 border-green-200 text-green-700' },
-    { label: 'Bài tập', value: EXERCISES.length, icon: '📚', color: 'bg-amber-50 border-amber-200 text-amber-700' },
+    { label: 'Bài tập', value: EXERCISES.length + dbExerciseCount, icon: '📚', color: 'bg-amber-50 border-amber-200 text-amber-700' },
     { label: 'Chủ đề', value: TOPICS.length, icon: '🗂️', color: 'bg-violet-50 border-violet-200 text-violet-700' },
   ]
 
