@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Groq from 'groq-sdk'
+import { auth } from '@/auth'
 import { TOPICS } from '@/lib/topics'
 
 export const runtime = 'nodejs'
@@ -10,6 +11,10 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 const TOPIC_LIST = TOPICS.map(t => `"${t.id}": ${t.name}`).join('\n')
 
 export async function POST(req: NextRequest) {
+  const session = await auth()
+  if (!session || !['admin', 'teacher'].includes(session.user.role ?? ''))
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
     const { text, autoTopic } = await req.json()
     if (!text?.trim()) return NextResponse.json({ exercises: [] })

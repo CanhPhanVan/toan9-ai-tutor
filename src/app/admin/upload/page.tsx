@@ -9,6 +9,23 @@ interface ParsedExercise {
   topicName?: string
 }
 
+const MAX_FILE_SIZE = 4 * 1024 * 1024 // Vercel serverless functions hard-cap request bodies ~4.5MB
+
+// Some failures (payload too large, gateway timeouts, etc.) never reach our route
+// handler — the platform returns plain text, not JSON. Parse defensively so the
+// user gets a clear message instead of a raw "Unexpected token" crash.
+async function safeJson(res: Response): Promise<{ error?: string; [key: string]: unknown }> {
+  const contentType = res.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) {
+    if (res.status === 413) return { error: 'File quá lớn — máy chủ từ chối nhận (giới hạn khoảng 4MB). Hãy nén ảnh/PDF hoặc chụp độ phân giải thấp hơn.' }
+    const text = await res.text()
+    return { error: `Máy chủ trả về lỗi không mong đợi (${res.status}): ${text.slice(0, 150)}` }
+  }
+  try { return await res.json() } catch {
+    return { error: 'Không đọc được phản hồi từ máy chủ. Vui lòng thử lại.' }
+  }
+}
+
 export default function AdminUploadPage() {
   const [text, setText] = useState('')
   const [topicId, setTopicId] = useState('')
@@ -27,16 +44,21 @@ export default function AdminUploadPage() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setExtracting(true)
     resetState()
+    if (file.size > MAX_FILE_SIZE) {
+      setError(`File "${file.name}" nặng ${(file.size / 1024 / 1024).toFixed(1)}MB, vượt giới hạn 4MB. Hãy nén ảnh/PDF hoặc chụp độ phân giải thấp hơn.`)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+    setExtracting(true)
     setStatus(`Đang đọc ${file.name}...`)
     try {
       const fd = new FormData()
       fd.append('file', file)
       const res = await fetch('/api/admin/extract-file', { method: 'POST', body: fd })
-      const data = await res.json()
-      if (data.error) { setError(data.error); return }
-      setText(data.text)
+      const data = await safeJson(res)
+      if (data.error) { setError(String(data.error)); return }
+      setText(String(data.text ?? ''))
       setStatus(`✅ Đã đọc xong — bấm Phân tích để tách bài`)
     } catch (err) {
       setError(`Lỗi đọc file: ${err instanceof Error ? err.message : String(err)}`)
@@ -60,9 +82,9 @@ export default function AdminUploadPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, autoTopic }),
       })
-      const data = await res.json()
-      if (data.error) { setError(data.error); return }
-      const exercises: ParsedExercise[] = data.exercises ?? []
+      const data = await safeJson(res)
+      if (data.error) { setError(String(data.error)); return }
+      const exercises: ParsedExercise[] = (data.exercises as ParsedExercise[]) ?? []
       setPreview(exercises)
       if (exercises.length === 0) setError('Không tìm thấy bài tập nào.')
       else setStatus(`✅ Tìm thấy ${exercises.length} bài — kiểm tra rồi bấm Lưu`)

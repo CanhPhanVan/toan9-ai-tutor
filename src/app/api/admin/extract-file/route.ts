@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Groq from 'groq-sdk'
+import { auth } from '@/auth'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -31,6 +32,10 @@ async function extractPdfText(buf: Buffer): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  const session = await auth()
+  if (!session || !['admin', 'teacher'].includes(session.user.role ?? ''))
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File
