@@ -21,29 +21,79 @@ const FALLBACK_MODELS = [
 
 const SCHEMA = `[{"title":"string","content":"string","solution":"string","hints":"string","method":"string"}]`
 
-async function callGroqWithFallback(messages: { role: string; content: string }[]) {
+function extractFirstArray(s: string): string | null {
+  const start = s.indexOf('[')
+  if (start === -1) return null
+  let depth = 0
+  let inStr = false
+  for (let i = start; i < s.length; i++) {
+    const ch = s[i]
+    if (ch === '"' && (i === 0 || s[i - 1] !== '\\')) inStr = !inStr
+    if (!inStr) {
+      if (ch === '[') depth++
+      else if (ch === ']') { depth--; if (depth === 0) return s.slice(start, i + 1) }
+    }
+  }
+  return null
+}
+
+function repairJSON(s: string): string {
+  let result = ''
+  let inStr = false
+  let i = 0
+  while (i < s.length) {
+    const ch = s[i]
+    if (ch === '"' && (i === 0 || s[i - 1] !== '\\')) { inStr = !inStr; result += ch }
+    else if (inStr) {
+      if (ch === '\n') result += '\\n'
+      else if (ch === '\r') result += '\\r'
+      else if (ch === '\t') result += '\\t'
+      else if (ch === '\\' && i + 1 < s.length) {
+        const next = s[i + 1]
+        if ('"\\\/bfnrtu'.includes(next)) { result += ch + next; i += 2; continue }
+        else result += '\\\\'
+      } else result += ch
+    } else result += ch
+    i++
+  }
+  return result
+}
+
+function parseExerciseArray(raw: string): Record<string, unknown>[] {
+  const extracted = extractFirstArray(raw)
+  if (!extracted) throw new Error('AI không trả JSON')
+  try { return JSON.parse(extracted) } catch { /* try repair */ }
+  try { return JSON.parse(repairJSON(extracted)) } catch (e) {
+    throw new Error('JSON parse thất bại: ' + (e instanceof Error ? e.message : String(e)))
+  }
+}
+
+async function generateWithFallback(messages: { role: string; content: string }[]) {
   let lastError: Error | null = null
   for (const model of FALLBACK_MODELS) {
     try {
       const chat = await groq.chat.completions.create({
         model,
         temperature: 0.8,
-        max_tokens: 2500,
+        max_tokens: 4000,
         messages: messages as Parameters<typeof groq.chat.completions.create>[0]['messages'],
       })
-      return { chat, model }
+      const raw = chat.choices[0]?.message?.content ?? '[]'
+      const exercises = parseExerciseArray(raw)
+      return { exercises, model }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
-      const skip = msg.includes('429') || msg.includes('rate_limit') || msg.includes('decommissioned') || msg.includes('model_not_active')
+      const skip = msg.includes('429') || msg.includes('rate_limit') || msg.includes('decommissioned') ||
+        msg.includes('model_not_active') || msg.includes('AI không trả JSON') || msg.includes('JSON parse thất bại')
       if (skip) {
-        console.warn(`[gen] ${model} unavailable, trying next...`)
+        console.warn(`[gen] ${model} failed (${msg.slice(0, 80)}), trying next...`)
         lastError = e instanceof Error ? e : new Error(msg)
         continue
       }
       throw e
     }
   }
-  throw lastError ?? new Error('All models rate limited')
+  throw lastError ?? new Error('All models rate limited or returned invalid JSON')
 }
 
 export async function POST(req: NextRequest) {
@@ -76,22 +126,8 @@ Chỉ JSON array thuần, không markdown, không giải thích.`,
       },
     ]
 
-    const { chat, model: usedModel } = await callGroqWithFallback(messages)
+    const { exercises, model: usedModel } = await generateWithFallback(messages)
     console.log(`[gen] Used model: ${usedModel} for ${topicId} b${batch}`)
-
-    const raw = chat.choices[0]?.message?.content ?? '[]'
-    const match = raw.match(/\[[\s\S]*\]/)
-    if (!match) {
-      console.error(`[gen] No JSON for ${topicId} b${batch}:`, raw.slice(0, 200))
-      return NextResponse.json({ saved: 0, error: 'AI không trả JSON' })
-    }
-
-    let exercises: Record<string, unknown>[]
-    try {
-      exercises = JSON.parse(match[0])
-    } catch {
-      return NextResponse.json({ saved: 0, error: 'JSON parse thất bại' })
-    }
 
     let saved = 0
     for (const ex of exercises) {
