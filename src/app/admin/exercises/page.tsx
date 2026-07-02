@@ -4,6 +4,7 @@ import { EXERCISES } from '@/lib/exercises'
 import { TOPICS } from '@/lib/topics'
 import Link from 'next/link'
 import { contentSimilarity, CONTENT_DUPLICATE_THRESHOLD } from '@/lib/similarity'
+import MathPreview from '@/components/MathPreview'
 
 const DIFF_LABEL: Record<string, string> = { easy: 'Dễ', medium: 'Trung bình', hard: 'Khó', advanced: 'Nâng cao' }
 const DIFF_COLOR: Record<string, string> = {
@@ -12,10 +13,6 @@ const DIFF_COLOR: Record<string, string> = {
 }
 
 type DbExerciseRow = { id: string; title: string; content: string; topicId: string; topicName: string; difficulty: string; status: string; createdAt: string }
-
-function stripLatexDelimiters(s: string) {
-  return s.replace(/\$\$[\s\S]*?\$\$/g, m => m.slice(2, -2)).replace(/\$[^$]+\$/g, m => m.slice(1, -1))
-}
 
 export default function AdminExercisesPage() {
   const [filter, setFilter] = useState({ topic: '', diff: '', search: '' })
@@ -282,9 +279,7 @@ export default function AdminExercisesPage() {
                           <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">⚠️ Trùng nội dung</span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-400 mt-0.5 line-clamp-2 leading-snug">
-                        {(() => { const t = stripLatexDelimiters(ex.content); return t.length > 150 ? t.slice(0, 150) + '…' : t })()}
-                      </div>
+                      <MathPreview content={ex.content} className="mt-0.5" />
                     </td>
                     <td className="px-5 py-3 text-gray-500">{ex.topicName}</td>
                     <td className="px-5 py-3 text-center">

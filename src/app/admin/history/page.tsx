@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { EXERCISES } from '@/lib/exercises'
 import { HistoryFilters } from './HistoryFilters'
+import MathPreview from '@/components/MathPreview'
 
 export default async function AdminHistoryPage({
   searchParams,
@@ -100,9 +101,7 @@ export default async function AdminHistoryPage({
                     <td className="px-5 py-3 max-w-xs">
                       <div className="text-gray-700 font-medium truncate">{s.exerciseTitle ?? s.exerciseId}</div>
                       {contentMap.has(s.exerciseId) && (
-                        <div className="text-xs text-gray-400 mt-0.5 line-clamp-2 leading-snug">
-                          {(() => { const c = contentMap.get(s.exerciseId)!.replace(/\$\$[\s\S]*?\$\$/g, m => m.slice(2,-2)).replace(/\$[^$]+\$/g, m => m.slice(1,-1)); return c.length > 130 ? c.slice(0,130)+'…' : c })()}
-                        </div>
+                        <MathPreview content={contentMap.get(s.exerciseId)!} className="mt-0.5" />
                       )}
                     </td>
                     <td className="px-5 py-3 text-gray-500 text-xs">{s.topicName ?? '—'}</td>
