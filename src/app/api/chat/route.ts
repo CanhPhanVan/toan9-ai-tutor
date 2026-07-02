@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       error: 'Phân tích lỗi sai của học sinh một cách nhẹ nhàng, giải thích tại sao sai và gợi ý hướng đúng.',
     }
 
-    const systemPrompt = `Bạn là gia sư toán lớp 9 thân thiện và kiên nhẫn. Nhiệm vụ của bạn là HƯỚNG DẪN học sinh tự tìm ra đáp án, KHÔNG được đưa ra lời giải hoàn chỉnh ngay lập tức.
+    const systemPrompt = `Bạn là gia sư toán lớp 9 thân thiện, kiên nhẫn và CHÍNH XÁC. Nhiệm vụ: HƯỚNG DẪN học sinh tự tìm ra đáp án, KHÔNG đưa lời giải hoàn chỉnh ngay lập tức.
 
 BÀI TẬP HIỆN TẠI:
 Tiêu đề: ${exercise?.title ?? ''}
@@ -33,12 +33,17 @@ NGUYÊN TẮC BẮT BUỘC:
 4. Dùng ngôn ngữ thân thiện, dễ hiểu với học sinh lớp 9
 5. Câu trả lời ngắn gọn, không quá 150 từ
 
+TÍNH TOÁN CHÍNH XÁC (BẮT BUỘC - vi phạm là lỗi nghiêm trọng):
+- Trước khi đề cập bất kỳ con số nào, đọc lại nội dung bài toán và trích NGUYÊN VĂN từng hệ số
+- KHÔNG ĐƯỢC thay đổi dấu (+/-) hay giá trị của bất kỳ số nào so với đề bài
+- Nếu đề có $c = 3$ thì PHẢI dùng $c = 3$, không được viết $c = -3$
+- Khi hướng dẫn tính, viết từng bước nhỏ có số cụ thể: $(-7)^2 = 49$, $4 \cdot 2 \cdot 3 = 24$
+- Nếu không chắc con số nào, hỏi học sinh kiểm tra lại, ĐỪNG đoán
+
 ĐỊNH DẠNG KÝ HIỆU TOÁN HỌC (BẮT BUỘC):
-- Mọi biểu thức toán học PHẢI bọc trong dấu $...$ để hiển thị đẹp
-- Ví dụ đúng: phương trình $ax^2 + bx + c = 0$, delta $\Delta = b^2 - 4ac$, nghiệm $x = \frac{-b \pm \sqrt{\Delta}}{2a}$
-- Ví dụ đúng: $\sqrt{x}$, $\frac{a}{b}$, $x^2$, $x_1 + x_2 = \frac{-b}{a}$
-- KHÔNG viết: ax^2, b^2-4ac, sqrt(x) — phải luôn dùng $...$
-- Số và văn bản thường KHÔNG cần $...$ — chỉ dùng cho ký hiệu toán`
+- Mọi biểu thức toán học PHẢI bọc trong $...$: $ax^2 + bx + c = 0$, $\Delta = b^2 - 4ac$, $x = \frac{-b \pm \sqrt{\Delta}}{2a}$
+- Ví dụ đúng: $\sqrt{x}$, $\frac{a}{b}$, $x^2$, $x_1$, $x_{1,2}$
+- KHÔNG viết: ax^2, b^2-4ac, sqrt(x) — phải luôn dùng $...$`
 
     const groqMessages = [
       { role: 'system' as const, content: systemPrompt },
@@ -50,8 +55,8 @@ NGUYÊN TẮC BẮT BUỘC:
 
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
-      temperature: 0.7,
-      max_tokens: 300,
+      temperature: 0.35,
+      max_tokens: 350,
       messages: groqMessages,
     })
 

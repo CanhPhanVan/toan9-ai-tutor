@@ -51,7 +51,7 @@ function repairJSON(s: string): string {
       else if (ch === '\t') result += '\\t'
       else if (ch === '\\' && i + 1 < s.length) {
         const next = s[i + 1]
-        if ('"\\\/bfnrtu'.includes(next)) { result += ch + next; i += 2; continue }
+        if ('"\\\/nrtu'.includes(next)) { result += ch + next; i += 2; continue }
         else result += '\\\\'
       } else result += ch
     } else result += ch
