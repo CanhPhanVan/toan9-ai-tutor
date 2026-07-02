@@ -10,6 +10,28 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 const TOPIC_LIST = TOPICS.map(t => `"${t.id}": ${t.name}`).join('\n')
 
+function repairJSON(s: string): string {
+  let result = ''
+  let inStr = false
+  let i = 0
+  while (i < s.length) {
+    const ch = s[i]
+    if (ch === '"' && (i === 0 || s[i - 1] !== '\\')) { inStr = !inStr; result += ch }
+    else if (inStr) {
+      if (ch === '\n') result += '\\n'
+      else if (ch === '\r') result += '\\r'
+      else if (ch === '\t') result += '\\t'
+      else if (ch === '\\' && i + 1 < s.length) {
+        const next = s[i + 1]
+        if ('"\\\/bfnrtu'.includes(next)) { result += ch + next; i += 2; continue }
+        else result += '\\\\'
+      } else result += ch
+    } else result += ch
+    i++
+  }
+  return result
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session || !['admin', 'teacher'].includes(session.user.role ?? ''))
@@ -51,10 +73,14 @@ QUY TẮC QUAN TRỌNG:
     })
 
     const raw = chat.choices[0]?.message?.content ?? '[]'
-    // Extract JSON array robustly
     const match = raw.match(/\[[\s\S]*\]/)
     if (!match) return NextResponse.json({ exercises: [] })
-    const exercises = JSON.parse(match[0])
+    let exercises: unknown[]
+    try { exercises = JSON.parse(match[0]) } catch {
+      try { exercises = JSON.parse(repairJSON(match[0])) } catch (e2) {
+        return NextResponse.json({ error: 'AI trả về JSON không hợp lệ. Thử lại hoặc đơn giản hóa nội dung: ' + (e2 instanceof Error ? e2.message : String(e2)) }, { status: 500 })
+      }
+    }
     return NextResponse.json({ exercises })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)

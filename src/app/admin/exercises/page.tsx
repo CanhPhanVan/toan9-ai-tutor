@@ -1,8 +1,9 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { EXERCISES } from '@/lib/exercises'
 import { TOPICS } from '@/lib/topics'
 import Link from 'next/link'
+import { contentSimilarity, CONTENT_DUPLICATE_THRESHOLD } from '@/lib/similarity'
 
 const DIFF_LABEL: Record<string, string> = { easy: 'Dễ', medium: 'Trung bình', hard: 'Khó', advanced: 'Nâng cao' }
 const DIFF_COLOR: Record<string, string> = {
@@ -10,7 +11,11 @@ const DIFF_COLOR: Record<string, string> = {
   hard: 'bg-orange-100 text-orange-700', advanced: 'bg-red-100 text-red-700',
 }
 
-type DbExerciseRow = { id: string; title: string; topicId: string; topicName: string; difficulty: string; status: string; createdAt: string }
+type DbExerciseRow = { id: string; title: string; content: string; topicId: string; topicName: string; difficulty: string; status: string; createdAt: string }
+
+function stripLatexDelimiters(s: string) {
+  return s.replace(/\$\$[\s\S]*?\$\$/g, m => m.slice(2, -2)).replace(/\$[^$]+\$/g, m => m.slice(1, -1))
+}
 
 export default function AdminExercisesPage() {
   const [filter, setFilter] = useState({ topic: '', diff: '', search: '' })
@@ -34,19 +39,32 @@ export default function AdminExercisesPage() {
     (!filter.search || e.title.toLowerCase().includes(filter.search.toLowerCase()))
   )
 
-  // Titles that appear more than once in DB exercises — likely duplicates from AI batch generation
-  const titleCounts = dbExercises.reduce<Record<string, number>>((acc, e) => {
-    const key = e.title.trim().toLowerCase()
-    acc[key] = (acc[key] ?? 0) + 1
-    return acc
-  }, {})
-  const isDuplicateTitle = (title: string) => titleCounts[title.trim().toLowerCase()] > 1
+  // Content-based duplicate detection: group by topic, compare pairwise within each group
+  const duplicateIds = useMemo(() => {
+    const ids = new Set<string>()
+    const byTopic: Record<string, DbExerciseRow[]> = {}
+    for (const ex of dbExercises) {
+      if (!byTopic[ex.topicId]) byTopic[ex.topicId] = []
+      byTopic[ex.topicId].push(ex)
+    }
+    for (const group of Object.values(byTopic)) {
+      for (let i = 0; i < group.length; i++) {
+        for (let j = i + 1; j < group.length; j++) {
+          if (contentSimilarity(group[i].content, group[j].content) >= CONTENT_DUPLICATE_THRESHOLD) {
+            ids.add(group[i].id)
+            ids.add(group[j].id)
+          }
+        }
+      }
+    }
+    return ids
+  }, [dbExercises])
 
   const filteredDbExercises = dbExercises.filter(e =>
     (!filter.topic || e.topicId === filter.topic) &&
     (!filter.diff || e.difficulty === filter.diff) &&
-    (!filter.search || e.title.toLowerCase().includes(filter.search.toLowerCase())) &&
-    (!onlyDuplicates || isDuplicateTitle(e.title))
+    (!filter.search || e.title.toLowerCase().includes(filter.search.toLowerCase()) || e.content.toLowerCase().includes(filter.search.toLowerCase())) &&
+    (!onlyDuplicates || duplicateIds.has(e.id))
   )
 
   async function deleteExercise(id: string) {
@@ -214,7 +232,7 @@ export default function AdminExercisesPage() {
         <label className="flex items-center gap-2 text-sm text-gray-600 px-1 cursor-pointer">
           <input type="checkbox" checked={onlyDuplicates} onChange={e => setOnlyDuplicates(e.target.checked)}
             className="w-4 h-4 rounded accent-red-600" />
-          Chỉ hiện bài trùng tiêu đề
+          Chỉ hiện bài trùng nội dung
         </label>
       </div>
 
@@ -257,11 +275,16 @@ export default function AdminExercisesPage() {
                       <input type="checkbox" checked={selected.has(ex.id)} onChange={() => toggleSelect(ex.id)}
                         className="rounded border-gray-300 text-red-600 focus:ring-red-300 cursor-pointer" />
                     </td>
-                    <td className="px-5 py-3 font-medium text-gray-800">
-                      {ex.title}
-                      {isDuplicateTitle(ex.title) && (
-                        <span className="ml-2 text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">⚠️ Trùng</span>
-                      )}
+                    <td className="px-5 py-3 max-w-sm">
+                      <div className="font-medium text-gray-800 flex items-center gap-1 flex-wrap">
+                        {ex.title}
+                        {duplicateIds.has(ex.id) && (
+                          <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">⚠️ Trùng nội dung</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5 line-clamp-2 leading-snug">
+                        {(() => { const t = stripLatexDelimiters(ex.content); return t.length > 150 ? t.slice(0, 150) + '…' : t })()}
+                      </div>
                     </td>
                     <td className="px-5 py-3 text-gray-500">{ex.topicName}</td>
                     <td className="px-5 py-3 text-center">

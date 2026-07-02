@@ -8,6 +8,22 @@ export const maxDuration = 60
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 async function extractPdfText(buf: Buffer): Promise<string> {
+  // pdfjs-dist uses DOMMatrix for transform math even in Node.js; provide a minimal stub
+  if (typeof (globalThis as Record<string, unknown>).DOMMatrix === 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(globalThis as any).DOMMatrix = class DOMMatrix {
+      a=1; b=0; c=0; d=1; e=0; f=0
+      is2D=true; isIdentity=true
+      constructor(_?: unknown) {}
+      static fromMatrix() { return new (globalThis as any).DOMMatrix() }
+      multiply() { return new (globalThis as any).DOMMatrix() }
+      translate() { return new (globalThis as any).DOMMatrix() }
+      scale() { return new (globalThis as any).DOMMatrix() }
+      rotate() { return new (globalThis as any).DOMMatrix() }
+      inverse() { return new (globalThis as any).DOMMatrix() }
+      transformPoint(p: {x?: number; y?: number}) { return { x: p.x ?? 0, y: p.y ?? 0, z: 0, w: 1 } }
+    }
+  }
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
   const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buf) })
   const pdf = await loadingTask.promise

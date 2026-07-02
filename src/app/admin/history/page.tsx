@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { EXERCISES } from '@/lib/exercises'
 import { HistoryFilters } from './HistoryFilters'
 
 export default async function AdminHistoryPage({
@@ -30,6 +31,16 @@ export default async function AdminHistoryPage({
       orderBy: { createdAt: 'desc' },
     }),
   ])
+
+  // Build exerciseId → content map from DB exercises + static exercises
+  const exerciseIds = [...new Set(submissions.map((s: { exerciseId: string }) => s.exerciseId))]
+  const dbExerciseContents = await prisma.dbExercise.findMany({
+    where: { id: { in: exerciseIds } },
+    select: { id: true, content: true },
+  })
+  const staticContentMap = new Map(EXERCISES.map(e => [e.id, e.content]))
+  const dbContentMap = new Map(dbExerciseContents.map((e: { id: string; content: string }) => [e.id, e.content]))
+  const contentMap = new Map([...staticContentMap, ...dbContentMap])
 
   const totalCount = submissions.length
   const selfSolvedCount = submissions.filter((s: { aiHelpCount: number }) => s.aiHelpCount === 0).length
@@ -86,7 +97,14 @@ export default async function AdminHistoryPage({
                 return (
                   <tr key={s.id} className="hover:bg-gray-50">
                     <td className="px-5 py-3 font-medium text-gray-800">{s.userName ?? 'Học sinh'}</td>
-                    <td className="px-5 py-3 text-gray-600 max-w-xs truncate">{s.exerciseTitle ?? s.exerciseId}</td>
+                    <td className="px-5 py-3 max-w-xs">
+                      <div className="text-gray-700 font-medium truncate">{s.exerciseTitle ?? s.exerciseId}</div>
+                      {contentMap.has(s.exerciseId) && (
+                        <div className="text-xs text-gray-400 mt-0.5 line-clamp-2 leading-snug">
+                          {(() => { const c = contentMap.get(s.exerciseId)!.replace(/\$\$[\s\S]*?\$\$/g, m => m.slice(2,-2)).replace(/\$[^$]+\$/g, m => m.slice(1,-1)); return c.length > 130 ? c.slice(0,130)+'…' : c })()}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-5 py-3 text-gray-500 text-xs">{s.topicName ?? '—'}</td>
                     <td className="px-5 py-3 text-center">
                       {s.isCorrect === null ? (
