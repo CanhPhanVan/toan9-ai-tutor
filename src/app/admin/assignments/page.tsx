@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { TOPICS } from '@/lib/topics'
 import { EXERCISES } from '@/lib/exercises'
 import MathContent from '@/components/MathContent'
@@ -104,11 +104,26 @@ export default function AdminAssignmentsPage() {
     e.preventDefault()
     setMsg(null)
     if (selectedExerciseIds.length === 0) {
-      setMsg({ type: 'error', text: 'Chua chon bai tap nao' }); return
+      setMsg({ type: 'error', text: 'Chưa chọn bài tập nào' }); return
     }
     if (assignMode === 'specific' && !selectedStudentId) {
-      setMsg({ type: 'error', text: 'Chua chon hoc sinh' }); return
+      setMsg({ type: 'error', text: 'Chưa chọn học sinh' }); return
     }
+
+    // Warn if any selected exercises are already assigned
+    const alreadyAssigned = selectedExerciseIds.filter(id => assignedExerciseIds.has(id))
+    if (alreadyAssigned.length > 0) {
+      const names = alreadyAssigned
+        .map(id => allExercises.find(e => e.id === id)?.title ?? id)
+        .slice(0, 3)
+        .join(', ')
+      const suffix = alreadyAssigned.length > 3 ? ` và ${alreadyAssigned.length - 3} bài khác` : ''
+      const ok = window.confirm(
+        `${alreadyAssigned.length} bài đã được giao trước đó:\n${names}${suffix}\n\nCó muốn giao lại không?`
+      )
+      if (!ok) return
+    }
+
     setSaving(true)
 
     const assignedTo = assignMode === 'all' ? 'all' : [selectedStudentId]
@@ -165,6 +180,9 @@ export default function AdminAssignmentsPage() {
     if (a.assignedTo === 'all') return studentCount
     try { return JSON.parse(a.assignedTo).length } catch { return studentCount }
   }
+
+  // Set of exerciseIds that already have an active assignment
+  const assignedExerciseIds = useMemo(() => new Set(assignments.map(a => a.exerciseId)), [assignments])
 
   const visibleAllSelected = exercisesForTopic.length > 0 &&
     exercisesForTopic.every(e => selectedExerciseIds.includes(e.id))
@@ -332,6 +350,7 @@ export default function AdminAssignmentsPage() {
             ) : (
               exercisesForTopic.map(ex => {
                 const checked = selectedExerciseIds.includes(ex.id)
+                const alreadyAssigned = assignedExerciseIds.has(ex.id)
                 return (
                   <label
                     key={ex.id}
@@ -344,9 +363,16 @@ export default function AdminAssignmentsPage() {
                       className="mt-0.5 w-4 h-4 rounded accent-blue-600 flex-shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className={`text-sm font-semibold leading-snug ${checked ? 'text-blue-800' : 'text-gray-800'}`}>
-                        {ex.title}
-                      </p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className={`text-sm font-semibold leading-snug ${checked ? 'text-blue-800' : 'text-gray-800'}`}>
+                          {ex.title}
+                        </p>
+                        {alreadyAssigned && (
+                          <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">
+                            ⚠️ Đã giao
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {ex.topicName}{ex.difficulty ? ` · ${DIFFICULTY_LABEL[ex.difficulty] ?? ex.difficulty}` : ''}{ex.isDb ? ' · DB' : ''}
                       </p>

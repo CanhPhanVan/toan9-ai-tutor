@@ -4,6 +4,9 @@ import { TOPICS, DIFFICULTIES } from '@/lib/topics'
 import { EXERCISES } from '@/lib/exercises'
 import { ExerciseCard } from '@/components/ExerciseCard'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
+
+export const dynamic = 'force-dynamic'
 
 export default async function TopicPage({ params }: { params: Promise<{ topicId: string }> }) {
   const { topicId } = await params
@@ -12,17 +15,39 @@ export default async function TopicPage({ params }: { params: Promise<{ topicId:
 
   const staticExercises = EXERCISES.filter(e => e.topicId === topicId)
 
-  const dbExercises = await prisma.dbExercise.findMany({
-    where: { topicId, status: 'published' },
-    orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
-    select: { id: true, title: true, content: true, difficulty: true, topicId: true },
-  })
+  const [dbExercises, session] = await Promise.all([
+    prisma.dbExercise.findMany({
+      where: { topicId, status: 'published' },
+      orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
+      select: { id: true, title: true, content: true, difficulty: true, topicId: true },
+    }),
+    auth(),
+  ])
+
+  // Fetch submission status for logged-in student (take best result per exercise)
+  const submissionMap = new Map<string, { isCorrect: boolean | null }>()
+  if (session?.user?.id) {
+    const subs = await prisma.submission.findMany({
+      where: { userId: session.user.id, topicId },
+      select: { exerciseId: true, isCorrect: true },
+      orderBy: { submittedAt: 'desc' },
+    })
+    for (const s of subs) {
+      const existing = submissionMap.get(s.exerciseId)
+      if (!existing || (!existing.isCorrect && s.isCorrect)) {
+        submissionMap.set(s.exerciseId, { isCorrect: s.isCorrect ?? null })
+      }
+    }
+  }
 
   // Gộp: static trước, DB sau, nhóm theo difficulty
   const allExercises = [
     ...staticExercises.map(e => ({ id: e.id, title: e.title, content: e.content, difficulty: e.difficulty, topicId: e.topicId })),
     ...dbExercises,
   ]
+
+  const doneCount = submissionMap.size
+  const correctCount = [...submissionMap.values()].filter(s => s.isCorrect).length
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -43,7 +68,27 @@ export default async function TopicPage({ params }: { params: Promise<{ topicId:
             <h2 className="text-2xl font-bold text-gray-900">{topic.name}</h2>
           </div>
           <p className="text-gray-600">{topic.description}</p>
-          <p className="text-sm text-indigo-500 mt-1 font-medium">{allExercises.length} bài tập</p>
+          <div className="flex items-center gap-4 mt-2 flex-wrap">
+            <p className="text-sm text-indigo-500 font-medium">{allExercises.length} bài tập</p>
+            {doneCount > 0 && (
+              <>
+                <span className="text-gray-300">·</span>
+                <span className="text-sm text-green-600 font-medium">✅ {correctCount} đúng</span>
+                {doneCount > correctCount && (
+                  <span className="text-sm text-orange-500 font-medium">📝 {doneCount - correctCount} đã thử</span>
+                )}
+                <span className="text-sm text-gray-400">{allExercises.length - doneCount} chưa làm</span>
+              </>
+            )}
+          </div>
+          {doneCount > 0 && (
+            <div className="mt-3 bg-gray-100 rounded-full h-2 max-w-sm overflow-hidden">
+              <div
+                className="h-full bg-green-500 rounded-full transition-all"
+                style={{ width: `${Math.round((correctCount / allExercises.length) * 100)}%` }}
+              />
+            </div>
+          )}
         </div>
 
         {DIFFICULTIES.map(diff => {
@@ -65,6 +110,8 @@ export default async function TopicPage({ params }: { params: Promise<{ topicId:
                     content={ex.content}
                     difficulty={ex.difficulty}
                     topicId={topicId}
+                    isDone={submissionMap.has(ex.id)}
+                    isCorrect={submissionMap.get(ex.id)?.isCorrect ?? null}
                   />
                 ))}
               </div>
