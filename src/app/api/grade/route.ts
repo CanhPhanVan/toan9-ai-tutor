@@ -48,12 +48,23 @@ Trả về JSON hợp lệ với format CHÍNH XÁC (không thêm text ngoài JS
   ],
   "overallCorrect": false,
   "correctSolution": {
-    "method": "Tên phương pháp",
-    "steps": ["Bước 1 với ký hiệu $x^2 + bx + c = 0$", "Bước 2 tính $\\Delta = b^2 - 4ac$"],
-    "answer": "Đáp án, ví dụ $x_1 = 1, x_2 = 3$"
+    "method": "Tên phương pháp cụ thể (ví dụ: Phương pháp thế, Phương pháp cộng đại số...)",
+    "steps": [
+      "Bước 1: Đặt ẩn và lập phương trình — ghi rõ từng phương trình lập được, ví dụ: $\\frac{1}{x} + \\frac{1}{y} = \\frac{1}{6}$ và $\\frac{4}{x} + \\frac{3}{y} = \\frac{2}{3}$",
+      "Bước 2: Biến đổi/rút gọn hệ — ghi rõ phép tính, ví dụ: Đặt $u = \\frac{1}{x}$, $v = \\frac{1}{y}$ được hệ $u + v = \\frac{1}{6}$, $4u + 3v = \\frac{2}{3}$",
+      "Bước 3: Giải hệ — trình bày từng phép tính cụ thể: từ PT(1) rút $u = \\frac{1}{6} - v$, thế vào PT(2) tính ra $v = ...$, suy ra $u = ...$",
+      "Bước 4: Kết luận — tính ngược lại $x = ...$, $y = ...$"
+    ],
+    "answer": "Đáp án cuối cùng ghi rõ giá trị, ví dụ $x = 10$ ngày, $y = 30$ ngày"
   },
   "encouragement": "Lời động viên cho học sinh lớp 9"
-}`,
+}
+
+YÊU CẦU VỀ correctSolution.steps (BẮT BUỘC):
+- Mỗi bước PHẢI ghi rõ phép tính cụ thể, con số thực tế, không được viết chung chung kiểu "Giải hệ phương trình trên"
+- Phải trình bày đủ: lập phương trình → biến đổi → tính toán từng bước → kết quả
+- Tất cả biểu thức toán bọc trong $...$
+- Số bước từ 4 đến 7 bước tùy độ phức tạp của bài`,
         },
         { role: 'user', content: prompt },
       ],

@@ -77,24 +77,24 @@ export function GradingResult({ result }: GradingResultProps) {
         </div>
       </div>
 
-      {/* Correct solution */}
+      {/* Correct solution — chỉ hiện khi làm sai */}
       {!result.overallCorrect && correctSolution && (
         <div className="bg-indigo-50 rounded-2xl border border-indigo-200 p-5">
-          <h3 className="font-semibold text-indigo-700 mb-3">📚 Lời giải đúng:</h3>
-          <p className="text-xs font-medium text-indigo-500 mb-2">
+          <h3 className="font-semibold text-indigo-700 mb-3">📚 Lời giải chi tiết:</h3>
+          <p className="text-xs font-medium text-indigo-500 mb-3">
             Phương pháp: <MathContent text={correctSolution.method} />
           </p>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {(correctSolution.steps ?? []).map((step, i) => (
-              <div key={i} className="flex gap-2 text-sm text-indigo-800">
-                <span className="flex-shrink-0 font-bold text-indigo-400">B{i + 1}.</span>
-                <span><MathContent text={step} /></span>
+              <div key={i} className="flex gap-3 text-sm">
+                <span className="flex-shrink-0 font-bold text-indigo-400 w-6">B{i + 1}.</span>
+                <span className="text-indigo-900 leading-relaxed"><MathContent text={step} /></span>
               </div>
             ))}
           </div>
-          <div className="mt-3 pt-3 border-t border-indigo-200">
+          <div className="mt-4 pt-3 border-t border-indigo-200">
             <p className="text-sm font-semibold text-indigo-700">
-              Đáp án: <MathContent text={correctSolution.answer} />
+              ✅ Đáp án: <MathContent text={correctSolution.answer} />
             </p>
           </div>
         </div>
