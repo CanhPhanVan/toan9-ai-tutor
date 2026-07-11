@@ -154,4 +154,4 @@ export const THEORY_VIDEOS: TopicVideo[] = [
       'Với phép thử phức tạp (gieo 2 xúc xắc, rút 2 lá bài...), dùng sơ đồ cây hoặc bảng để đếm kết quả thuận lợi không bị sót/trùng.',
       'Xác suất luôn nằm trong đoạn $[0; 1]$; biến cố chắc chắn có xác suất 1, biến cố không thể có xác suất 0.',
     ],
-    searchQuery: 'toán 9 xác suất thực nghiệm xác
+    searchQuery: 'toán 9 xác suất thực nghiệm xác suất lý thuyết bài giảng',
