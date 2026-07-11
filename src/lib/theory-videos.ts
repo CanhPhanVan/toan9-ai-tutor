@@ -63,7 +63,7 @@ export const THEORY_VIDEOS: TopicVideo[] = [
   },
   {
     topicId: 'ham-so-do-thi',
-    videoId: 'fw80aTfTz2Q&t=1271s',
+    videoId: 'fw80aTfTz2Q',
     title: 'Hàm số bậc nhất và hàm số bậc hai',
     channel: 'YouTube',
     keyPoints: [
