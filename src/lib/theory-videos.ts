@@ -91,9 +91,9 @@ export const THEORY_VIDEOS: TopicVideo[] = [
   },
   {
     topicId: 'hinh-hoc-phang',
-    videoId: '9CPNB-J10R0',
+    videoId: 'AK9UNXfwWRs',
     title: 'Tam giác đồng dạng - Tỉ số đồng dạng',
-    channel: 'ToanLamToan',
+    channel: 'YouTube',
     keyPoints: [
       'Ba trường hợp đồng dạng của tam giác: cạnh-cạnh-cạnh (c-c-c), cạnh-góc-cạnh (c-g-c), góc-góc (g-g).',
       'Tỉ số đồng dạng kéo theo tỉ số chu vi bằng k, tỉ số diện tích bằng $k^2$.',
