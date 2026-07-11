@@ -155,3 +155,35 @@ export const THEORY_VIDEOS: TopicVideo[] = [
       'Xác suất luôn nằm trong đoạn $[0; 1]$; biến cố chắc chắn có xác suất 1, biến cố không thể có xác suất 0.',
     ],
     searchQuery: 'toán 9 xác suất thực nghiệm xác suất lý thuyết bài giảng',
+    },
+  {
+    topicId: 'bai-toan-thuc-te',
+    videoId: null,
+    title: 'Ứng dụng toán học vào bài toán thực tế',
+    keyPoints: [
+      'Bước quan trọng nhất là "phiên dịch" tình huống thực tế sang ngôn ngữ toán học: gọi ẩn rõ ràng, xác định đơn vị.',
+      'Các dạng quen thuộc: chuyển động (quãng đường = vận tốc × thời gian), năng suất, phần trăm, hình học thực tế (diện tích, thể tích).',
+      'Với bài toán có nhiều đại lượng liên quan, lập bảng biến thiên (giống bảng 3 dòng: đại lượng — trước — sau) để không bỏ sót dữ kiện.',
+      'Luôn đối chiếu kết quả tìm được với điều kiện thực tế của đề (số người, tuổi, kích thước phải dương và hợp lý).',
+      'Ví dụ mẫu: bài toán vật rơi tự do dùng hàm số bậc hai $S = 4.9t^2$ để tính thời gian rơi.',
+    ],
+    searchQuery: 'toán 9 giải bài toán bằng cách lập phương trình thực tế bài giảng',
+  },
+  {
+    topicId: 'de-tong-hop',
+    videoId: null,
+    title: 'Chiến lược làm đề tổng hợp thi vào lớp 10',
+    keyPoints: [
+      'Cấu trúc đề thi vào 10 TP.HCM thường gồm: rút gọn biểu thức, giải phương trình/hệ, hàm số & đồ thị, hình học tổng hợp, bài toán thực tế.',
+      'Phân bổ thời gian hợp lý: làm câu dễ/quen thuộc trước để chắc điểm, để hình học tổng hợp và câu vận dụng cao lại sau.',
+      'Với câu hình học nhiều ý, ý sau thường dùng lại kết quả của ý trước — đọc kỹ toàn bài trước khi vẽ hình.',
+      'Luôn trình bày điều kiện xác định, điều kiện của ẩn ngay từ đầu bài giải, tránh mất điểm ở bước cơ bản.',
+      'Kiểm tra lại toàn bộ đáp số cuối buổi làm bài: đơn vị, dấu, và tính hợp lý so với thực tế đề bài.',
+    ],
+    searchQuery: 'đề thi vào lớp 10 TP HCM toán chữa đề bài giảng',
+  },
+]
+
+export function getTopicVideo(topicId: string): TopicVideo | undefined {
+  return THEORY_VIDEOS.find((v) => v.topicId === topicId)
+}
