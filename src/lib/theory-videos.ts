@@ -63,8 +63,9 @@ export const THEORY_VIDEOS: TopicVideo[] = [
   },
   {
     topicId: 'ham-so-do-thi',
-    videoId: null,
+    videoId: 'fw80aTfTz2Q&t=1271s',
     title: 'Hàm số bậc nhất và hàm số bậc hai',
+    channel: 'YouTube',
     keyPoints: [
       'Hàm số bậc nhất $y = ax + b$: đồng biến khi $a > 0$, nghịch biến khi $a < 0$; đồ thị là đường thẳng.',
       'Cách vẽ nhanh: tìm giao điểm với Ox $(-b/a; 0)$ và Oy $(0; b)$.',
