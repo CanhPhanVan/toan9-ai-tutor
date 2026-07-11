@@ -75,6 +75,7 @@ export const THEORY_VIDEOS: TopicVideo[] = [
     searchQuery: 'toán 9 hàm số bậc nhất hàm số bậc hai đồ thị bài giảng',
   },
   {
+     topicId: 'phuong-trinh-bac-hai',
     videoId: 'n7sTwYJYEgI',
     title: 'Công thức nghiệm của phương trình bậc hai',
     channel: 'YouTube',
