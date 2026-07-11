@@ -75,10 +75,9 @@ export const THEORY_VIDEOS: TopicVideo[] = [
     searchQuery: 'toán 9 hàm số bậc nhất hàm số bậc hai đồ thị bài giảng',
   },
   {
-    topicId: 'phuong-trinh-bac-hai',
-    videoId: 'zOAlfGWAoMA',
+    videoId: 'n7sTwYJYEgI',
     title: 'Công thức nghiệm của phương trình bậc hai',
-    channel: 'OLM.VN',
+    channel: 'YouTube',
     keyPoints: [
       'Công thức nghiệm tổng quát với $\\Delta = b^2 - 4ac$: xét dấu $\\Delta$ để biết phương trình có 2 nghiệm, nghiệm kép, hay vô nghiệm.',
       'Công thức nghiệm thu gọn dùng $b\'= b/2$ khi $b$ chẵn — giúp tính nhanh hơn.',
