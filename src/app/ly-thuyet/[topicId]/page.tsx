@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { TOPICS } from '@/lib/topics'
 import { THEORY } from '@/lib/theory'
+import { getTopicVideo } from '@/lib/theory-videos'
 import MathContent from '@/components/MathContent'
+import TheoryVideo from '@/components/TheoryVideo'
 
 interface Props {
   params: Promise<{ topicId: string }>
@@ -17,6 +19,7 @@ export default async function LyThuyetTopicPage({ params }: Props) {
 
   const topic = TOPICS.find((t) => t.id === topicId)
   const theory = THEORY.find((t) => t.topicId === topicId)
+  const video = getTopicVideo(topicId)
 
   if (!topic || !theory) notFound()
 
@@ -47,6 +50,9 @@ export default async function LyThuyetTopicPage({ params }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Video */}
+        {video && <TheoryVideo video={video} />}
 
         {/* Summary */}
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
