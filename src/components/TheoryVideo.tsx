@@ -25,7 +25,7 @@ export default function TheoryVideo({ video }: Props) {
           />
         </div>
       ) : (
-        
+        <a
           href={youtubeSearchUrl}
           target="_blank"
           rel="noopener noreferrer"
