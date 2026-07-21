@@ -23,18 +23,21 @@ Các bước đúng: ${(solution.steps as string[]).join(' | ')}
 
 Hãy chấm bài làm của học sinh theo từng bước và trả về JSON.`
 
-    const completion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      temperature: 0.3,
-      messages: [
-        {
-          role: 'system',
-          content: `Bạn là giáo viên toán lớp 9 chuyên nghiệp và thân thiện. Chấm bài làm theo từng bước.
+    async function callGroq() {
+      const completion = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        temperature: 0.3,
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: 'system',
+            content: `Bạn là giáo viên toán lớp 9 chuyên nghiệp và thân thiện. Chấm bài làm theo từng bước.
 
 ĐỊNH DẠNG KÝ HIỆU TOÁN (BẮT BUỘC trong mọi chuỗi text):
 - Mọi biểu thức toán PHẢI bọc trong $...$: ví dụ $x^2$, $\\Delta = b^2 - 4ac$, $\\sqrt{x}$, $\\frac{a}{b}$, $x_1$
 - Phương trình dài dùng $$...$$: ví dụ $$x = \\frac{-b \\pm \\sqrt{\\Delta}}{2a}$$
 - KHÔNG viết: x^2, delta, sqrt(x) — phải luôn dùng $...$
+- QUAN TRỌNG: đây là JSON, mọi dấu \\ trong LaTeX PHẢI viết thành \\\\ để JSON hợp lệ (ví dụ \\\\Delta, \\\\frac, \\\\sqrt)
 
 Trả về JSON hợp lệ với format CHÍNH XÁC (không thêm text ngoài JSON, không dùng markdown):
 {
@@ -65,13 +68,29 @@ YÊU CẦU VỀ correctSolution.steps (BẮT BUỘC):
 - Phải trình bày đủ: lập phương trình → biến đổi → tính toán từng bước → kết quả
 - Tất cả biểu thức toán bọc trong $...$
 - Số bước từ 4 đến 7 bước tùy độ phức tạp của bài`,
-        },
-        { role: 'user', content: prompt },
-      ],
-    })
+          },
+          { role: 'user', content: prompt },
+        ],
+      })
+      return completion.choices[0]?.message?.content ?? ''
+    }
 
-    const text = completion.choices[0]?.message?.content ?? ''
-    const result = parseAIJson(text) as { overallCorrect?: boolean; steps?: { isCorrect: boolean }[] }
+    let text = await callGroq()
+    let result: { overallCorrect?: boolean; steps?: { isCorrect: boolean }[] }
+    try {
+      result = parseAIJson(text) as typeof result
+    } catch (parseError) {
+      console.error('Grade API JSON parse failed, raw text (first 500 chars):', text.slice(0, 500))
+      console.error('Parse error:', parseError)
+      // Retry once — models occasionally emit malformed JSON on the first try
+      text = await callGroq()
+      try {
+        result = parseAIJson(text) as typeof result
+      } catch (retryError) {
+        console.error('Grade API JSON parse failed on retry too, raw text (first 500 chars):', text.slice(0, 500))
+        throw retryError
+      }
+    }
 
     // Compute score from step results
     const steps = result.steps ?? []
