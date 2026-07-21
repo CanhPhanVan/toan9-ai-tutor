@@ -1,27 +1,57 @@
 // Extract and safely parse JSON from AI response that may contain LaTeX backslashes.
-// Critically: \f and \b are valid JSON escapes (form-feed, backspace) but they're
-// also the start of LaTeX commands \frac \forall \begin. In math content the JSON
-// meaning is never intended, so we do NOT exclude them — we double their backslash.
-// Only keep \\ \" \/ \n \r \t \uXXXX as valid JSON escapes.
+//
+// The core problem: LaTeX commands (\begin, \frac, \Rightarrow, \Delta...) use a
+// single backslash, but in JSON a single backslash MUST start a recognized escape
+// sequence. Two of the JSON escapes — \b (backspace) and \f (form-feed) — happen to
+// collide with the start of \begin and \frac. If we naively call JSON.parse on text
+// where the model wrote a literal single backslash before "begin", JSON.parse will
+// NOT throw — it will silently consume "\b" as a backspace control character and
+// leave "egin{cases}" behind, corrupting the content without any error to catch.
+//
+// So we can never trust a "successful" plain JSON.parse on raw model output — we
+// must always normalize backslashes first. The normalizer below walks the string
+// character by character (not with a regex) so it correctly handles runs of
+// backslashes: a genuine escaped backslash (\\) is left untouched, while any lone
+// backslash — including \b and \f — is doubled so it survives as a literal
+// backslash after parsing.
+function normalizeBackslashes(raw: string): string {
+  const VALID_SINGLE_ESCAPES = '"\\/nrtu' // note: deliberately excludes b and f
+  let out = ''
+  let i = 0
+  while (i < raw.length) {
+    const ch = raw[i]
+    if (ch === '\\') {
+      const next = raw[i + 1]
+      if (next === '\\') {
+        // Genuine escaped backslash — keep both characters, consume 2.
+        out += '\\\\'
+        i += 2
+        continue
+      }
+      if (next !== undefined && VALID_SINGLE_ESCAPES.includes(next)) {
+        // A real JSON escape we want to keep (\" \/ \n \r \t \u...).
+        out += '\\' + next
+        i += 2
+        continue
+      }
+      // Anything else — including \b, \f, or a LaTeX command like \Delta —
+      // is not a JSON escape we want to honor. Double it so JSON.parse sees
+      // a literal backslash instead of eating the next character.
+      out += '\\\\'
+      i += 1
+      continue
+    }
+    out += ch
+    i += 1
+  }
+  return out
+}
+
 export function parseAIJson(text: string): unknown {
   const match = text.match(/\{[\s\S]*\}/)
   if (!match) throw new Error('No JSON found in response')
 
-  const original = match[0]
-
-  // Try parsing as-is first — when the model is in strict JSON mode it already
-  // escapes backslashes correctly, and re-escaping here would corrupt them.
-  try {
-    return JSON.parse(original)
-  } catch {
-    // Fall through to the backslash-fixing heuristic below for models that
-    // emit raw LaTeX backslashes without proper JSON escaping.
-  }
-
-  let raw = original
-  // Double any backslash NOT followed by a true JSON escape sequence character.
-  // Excludes: \" \\ \/ \n \r \t \uXXXX — includes everything else (e.g. \f \b \s \D)
-  raw = raw.replace(/\\(?!["\\/nrtu])/g, '\\\\')
+  let raw = normalizeBackslashes(match[0])
 
   try {
     return JSON.parse(raw)
