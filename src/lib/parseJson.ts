@@ -7,8 +7,18 @@ export function parseAIJson(text: string): unknown {
   const match = text.match(/\{[\s\S]*\}/)
   if (!match) throw new Error('No JSON found in response')
 
-  let raw = match[0]
+  const original = match[0]
 
+  // Try parsing as-is first — when the model is in strict JSON mode it already
+  // escapes backslashes correctly, and re-escaping here would corrupt them.
+  try {
+    return JSON.parse(original)
+  } catch {
+    // Fall through to the backslash-fixing heuristic below for models that
+    // emit raw LaTeX backslashes without proper JSON escaping.
+  }
+
+  let raw = original
   // Double any backslash NOT followed by a true JSON escape sequence character.
   // Excludes: \" \\ \/ \n \r \t \uXXXX — includes everything else (e.g. \f \b \s \D)
   raw = raw.replace(/\\(?!["\\/nrtu])/g, '\\\\')
